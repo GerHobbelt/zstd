@@ -1,11 +1,8 @@
 name: generic-release
 
 on:
-  pull_request:
-    # This will eventually only be for pushes to master
-    # but for dogfooding purposes, I'm running it even 
-    # on dev pushes
-    branches: [ dev, master, actionsTest ]
+  release:
+    types: [published]
 
 jobs:
   # missing jobs
