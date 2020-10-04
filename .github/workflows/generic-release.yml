@@ -11,19 +11,21 @@ jobs:
         config:
           - {os: ubuntu-latest, preset: linuxX64, task: make install}
           - {os: macos-latest, preset: macosX64, task: make install}
-          - {os: windows-latest, preset: mingwX64, task: make install}
+#          - {os: windows-latest, preset: mingwX64, task: make install}
     name: Publish for ${{ matrix.config.os }}
     runs-on: ${{ matrix.config.os }}
     steps:
     - uses: actions/checkout@v2
+    - name: ${{ matrix.config.os }}
       run: |
-        ${{ matrix.config.task }}
-    - name: Upload Release Asset
+        sudo ${{ matrix.config.task }}
+
+    - name: Upload *NIX Assets
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./lib
-        asset_name: lib.zip
-        asset_content_type: application/zip
+        asset_path: ./lib/libzstd.a
+        asset_name: ${{ matrix.config.preset }}-libzstd.a
+        asset_content_type: application/a
