@@ -45,6 +45,11 @@ static unsigned readU32FromChar(const char** stringPtr)
 }
 
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_stream_mem_usage_main(cnt, arr)
+#endif
+
 int main(int argc, char const *argv[]) {
 
     printf("\n Zstandard (v%s) memory usage for streaming : \n\n", ZSTD_versionString());

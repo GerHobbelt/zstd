@@ -92,6 +92,11 @@ static void compressFile_orDie(resources ress, const char* fname, const char* ou
     fclose_orDie(fin);
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_multi_stream_compress_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     const char* const exeName = argv[0];

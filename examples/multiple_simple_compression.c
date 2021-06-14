@@ -80,6 +80,10 @@ static void compressFile_orDie(resources ress, const char* fname, const char* on
     printf("%25s : %6u -> %7u - %s \n", fname, (unsigned)fSize, (unsigned)cSize, oname);
 }
 
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_multi_simple_compress_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     const char* const exeName = argv[0];

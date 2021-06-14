@@ -21,6 +21,10 @@ extern "C" {
 *  Compiler Options
 ****************************************/
 #if defined(_MSC_VER)
+#  undef _CRT_SECURE_NO_WARNINGS    
+#  undef _CRT_NONSTDC_NO_WARNINGS
+#  undef _CRT_SECURE_NO_DEPRECATE 
+
 #  define _CRT_SECURE_NO_WARNINGS    /* Disable Visual Studio warning messages for fopen, strncpy, strerror */
 #  define _CRT_NONSTDC_NO_WARNINGS   /* Disable C4996 complaining about posix function names */
 #  if (_MSC_VER <= 1800)             /* 1800 == Visual Studio 2013 */

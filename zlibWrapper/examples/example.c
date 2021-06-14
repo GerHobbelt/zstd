@@ -567,9 +567,11 @@ void test_dict_inflate(compr, comprLen, uncompr, uncomprLen)
  * Usage:  example [output.gz  [input.gz]]
  */
 
-int main(argc, argv)
-    int argc;
-    char *argv[];
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_zlib_example_main(cnt, arr)
+#endif
+
+int main(int argc, char *argv[])
 {
     Byte *compr, *uncompr;
     uLong comprLen = 10000*sizeof(int); /* don't overflow on MSDOS */

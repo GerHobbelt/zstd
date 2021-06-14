@@ -870,6 +870,11 @@ static unsigned readU32FromChar(const char** stringPtr)
 
 #define CLEAN_RETURN(i) { operationResult = (i); goto _end; }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_zwrapbench_main(cnt, arr)
+#endif
+
 int main(int argCount, char** argv)
 {
     int argNb,

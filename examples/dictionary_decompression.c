@@ -75,6 +75,10 @@ static void decompress(const char* fname, const ZSTD_DDict* ddict)
 }
 
 
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_dict_decompress_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     const char* const exeName = argv[0];

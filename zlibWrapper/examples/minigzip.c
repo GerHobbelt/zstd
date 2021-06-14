@@ -546,9 +546,12 @@ void file_uncompress(file)
  *   -1 to -9 : compression level
  */
 
-int main(argc, argv)
-    int argc;
-    char *argv[];
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_minigzip_main(cnt, arr)
+#endif
+
+int main(int argc, char *argv[])
 {
     int copyout = 0;
     int uncompr = 0;

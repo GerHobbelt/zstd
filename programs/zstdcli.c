@@ -722,6 +722,11 @@ typedef enum { zom_compress, zom_decompress, zom_test, zom_bench, zom_train, zom
 # define MAXCLEVEL  ZSTD_maxCLevel()
 #endif
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_main(cnt, arr)
+#endif
+
 int main(int const argCount, const char* argv[])
 {
     int argNb,

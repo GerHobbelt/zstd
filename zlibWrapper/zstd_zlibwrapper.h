@@ -19,7 +19,7 @@ extern "C" {
 #define ZLIB_CONST
 #define Z_PREFIX
 #define ZLIB_INTERNAL   /* disables gz*64 functions but fixes zlib 1.2.4 with Z_PREFIX */
-#include <zlib.h>
+#include <zlib-ng.h>
 
 #if !defined(z_const)
     #define z_const
@@ -49,12 +49,12 @@ int ZWRAP_isUsingZSTDcompression(void);
    It's only helpful when data is compressed in blocks.
    There will be no change in case of deflateInit() or deflateReset() immediately followed by deflate(strm, Z_FINISH)
    as this case is automatically detected.  */
-int ZWRAP_setPledgedSrcSize(z_streamp strm, unsigned long long pledgedSrcSize);
+int ZWRAP_setPledgedSrcSize(zng_streamp strm, unsigned long long pledgedSrcSize);
 
 /* Similar to deflateReset but preserves dictionary set using deflateSetDictionary.
    It should improve compression speed because there will be less calls to deflateSetDictionary
    When using zlib compression this method redirects to deflateReset. */
-int ZWRAP_deflateReset_keepDict(z_streamp strm);
+int ZWRAP_deflateReset_keepDict(zng_streamp strm);
 
 
 
@@ -73,12 +73,12 @@ ZWRAP_decompress_type ZWRAP_getDecompressionType(void);
 
 /* Checks if zstd decompression is used for a given stream.
    If will return 1 only when inflate() was called and zstd header was detected. */
-int ZWRAP_isUsingZSTDdecompression(z_streamp strm);
+int ZWRAP_isUsingZSTDdecompression(zng_streamp strm);
 
 /* Similar to inflateReset but preserves dictionary set using inflateSetDictionary.
    inflate() will return Z_NEED_DICT only for the first time what will improve decompression speed.
    For zlib streams this method redirects to inflateReset. */
-int ZWRAP_inflateReset_keepDict(z_streamp strm);
+int ZWRAP_inflateReset_keepDict(zng_streamp strm);
 
 
 #if defined (__cplusplus)
