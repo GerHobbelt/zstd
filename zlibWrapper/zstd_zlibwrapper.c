@@ -22,7 +22,12 @@
 #include <string.h>
 #define NO_DUMMY_DECL
 #define ZLIB_CONST
-#include <zlib.h>                  /* without #define Z_PREFIX */
+/* without #define Z_PREFIX */
+#ifdef ZLIB_COMPAT
+#  include "zlib.h"
+#else
+#  include "zlib-ng.h"
+#endif
 #include "zstd_zlibwrapper.h"
 #define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_isFrame, ZSTD_MAGICNUMBER, ZSTD_customMem */
 #include "zstd.h"

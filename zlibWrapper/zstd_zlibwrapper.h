@@ -19,7 +19,11 @@ extern "C" {
 #define ZLIB_CONST
 #define Z_PREFIX
 #define ZLIB_INTERNAL   /* disables gz*64 functions but fixes zlib 1.2.4 with Z_PREFIX */
-#include <zlib-ng.h>
+#ifdef ZLIB_COMPAT
+#  include "zlib.h"
+#else
+#  include "zlib-ng.h"
+#endif
 
 #if !defined(z_const)
     #define z_const
