@@ -208,6 +208,7 @@ static void usage_advanced(const char* programName)
     DISPLAYOUT( "--fast[=#]: switch to very fast compression levels (default: %u) \n", 1);
     DISPLAYOUT( "--adapt : dynamically adapt compression level to I/O conditions \n");
     DISPLAYOUT( "--[no-]row-match-finder : force enable/disable usage of fast row-based matchfinder for greedy, lazy, and lazy2 strategies \n");
+    DISPLAYOUT( "--patch-from=FILE : specify the file to be used as a reference point for zstd's diff engine. \n");
 # ifdef ZSTD_MULTITHREAD
     DISPLAYOUT( " -T#    : spawns # compression threads (default: 1, 0==# cores) \n");
     DISPLAYOUT( " -B#    : select size of each job (default: 0==automatic) \n");
@@ -351,6 +352,23 @@ static unsigned readU32FromChar(const char** stringPtr) {
     unsigned result;
     if (readU32FromCharChecked(stringPtr, &result)) { errorOut(errorMsg); }
     return result;
+}
+
+/*! readIntFromChar() :
+ * @return : signed integer value read from input in `char` format.
+ *  allows and interprets K, KB, KiB, M, MB and MiB suffix.
+ *  Will also modify `*stringPtr`, advancing it to position where it stopped reading.
+ *  Note : function will exit() program if digit sequence overflows */
+static int readIntFromChar(const char** stringPtr) {
+    static const char errorMsg[] = "error: numeric value overflows 32-bit int";
+    int sign = 1;
+    unsigned result;
+    if (**stringPtr=='-') {
+        (*stringPtr)++;
+        sign = -1;
+    }
+    if (readU32FromCharChecked(stringPtr, &result)) { errorOut(errorMsg); }
+    return (int) result * sign;
 }
 
 /*! readSizeTFromCharChecked() :
@@ -546,8 +564,8 @@ static ZDICT_fastCover_params_t defaultFastCoverParams(void)
 static unsigned parseAdaptParameters(const char* stringPtr, int* adaptMinPtr, int* adaptMaxPtr)
 {
     for ( ; ;) {
-        if (longCommandWArg(&stringPtr, "min=")) { *adaptMinPtr = (int)readU32FromChar(&stringPtr); if (stringPtr[0]==',') { stringPtr++; continue; } else break; }
-        if (longCommandWArg(&stringPtr, "max=")) { *adaptMaxPtr = (int)readU32FromChar(&stringPtr); if (stringPtr[0]==',') { stringPtr++; continue; } else break; }
+        if (longCommandWArg(&stringPtr, "min=")) { *adaptMinPtr = readIntFromChar(&stringPtr); if (stringPtr[0]==',') { stringPtr++; continue; } else break; }
+        if (longCommandWArg(&stringPtr, "max=")) { *adaptMaxPtr = readIntFromChar(&stringPtr); if (stringPtr[0]==',') { stringPtr++; continue; } else break; }
         DISPLAYLEVEL(4, "invalid compression parameter \n");
         return 0;
     }
@@ -1150,8 +1168,9 @@ int main(int const argCount, const char* argv[])
     (void)singleThread; (void)nbWorkers;
 #endif
 
-#ifdef UTIL_HAS_CREATEFILELIST
     g_utilDisplayLevel = g_displayLevel;
+
+#ifdef UTIL_HAS_CREATEFILELIST
     if (!followLinks) {
         unsigned u, fileNamesNb;
         unsigned const nbFilenames = (unsigned)filenames->tableSize;

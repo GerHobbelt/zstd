@@ -263,6 +263,10 @@ zstd -q -f tmpro
 println "test: --no-progress flag"
 zstd tmpro -c --no-progress | zstd -d -f -o "$INTOVOID" --no-progress
 zstd tmpro -cv --no-progress | zstd -dv -f -o "$INTOVOID" --no-progress
+println "test: --progress flag"
+zstd tmpro -c | zstd -d -f -o "$INTOVOID" --progress 2>&1 | grep -E "[A-Za-z0-9._ ]+: [0-9]+ bytes"
+zstd tmpro -c | zstd -d -f -q -o "$INTOVOID" --progress 2>&1 | grep -E "[A-Za-z0-9._ ]+: [0-9]+ bytes"
+zstd tmpro -c | zstd -d -f -v -o "$INTOVOID" 2>&1 | grep -E "[A-Za-z0-9._ ]+: [0-9]+ bytes"
 rm -f tmpro tmpro.zst
 println "test: overwrite input file (must fail)"
 zstd tmp -fo tmp && die "zstd compression overwrote the input file"
@@ -1441,7 +1445,7 @@ datagen -g0 > tmp5
 zstd tmp5
 zstd -l tmp5.zst
 zstd -l tmp5* && die "-l must fail on non-zstd file"
-zstd -lv tmp5.zst | grep "Decompressed Size: 0.00 KB (0 B)"  # check that 0 size is present in header
+zstd -lv tmp5.zst | grep "Decompressed Size: 0 B (0 B)"  # check that 0 size is present in header
 zstd -lv tmp5* && die "-l must fail on non-zstd file"
 
 println "\n===>  zstd --list/-l test with no content size field "
@@ -1515,6 +1519,7 @@ then
     println "\n===>   adaptive mode "
     roundTripTest -g270000000 " --adapt"
     roundTripTest -g27000000 " --adapt=min=1,max=4"
+    roundTripTest -g27000000 " --adapt=min=-2,max=-1"
     println "===>   test: --adapt must fail on incoherent bounds "
     datagen > tmp
     zstd -f -vv --adapt=min=10,max=9 tmp && die "--adapt must fail on incoherent bounds"

@@ -222,7 +222,7 @@ static int ZSTD_rowMatchFinderUsed(const ZSTD_strategy strategy, const ZSTD_useR
 /* Returns row matchfinder usage enum given an initial mode and cParams */
 static ZSTD_useRowMatchFinderMode_e ZSTD_resolveRowMatchFinderMode(ZSTD_useRowMatchFinderMode_e mode,
                                                                    const ZSTD_compressionParameters* const cParams) {
-#if !defined(ZSTD_NO_INTRINSICS) && (defined(__SSE2__) || defined(_M_AMD64)  || defined(__ARM_NEON))
+#if defined(ZSTD_ARCH_X86_SSE2) || defined(ZSTD_ARCH_ARM_NEON)
     int const kHasSIMD128 = 1;
 #else
     int const kHasSIMD128 = 0;
@@ -349,6 +349,17 @@ static void ZSTD_CCtxParams_init_internal(ZSTD_CCtx_params* cctxParams, ZSTD_par
     cctxParams->compressionLevel = compressionLevel;
     cctxParams->useRowMatchFinder = ZSTD_resolveRowMatchFinderMode(cctxParams->useRowMatchFinder, &params->cParams);
     DEBUGLOG(4, "ZSTD_CCtxParams_init_internal: useRowMatchFinder=%d", cctxParams->useRowMatchFinder);
+
+    if (ZSTD_CParams_shouldEnableLdm(&params->cParams)) {
+        /* Enable LDM by default for optimal parser and window size >= 128MB */
+        DEBUGLOG(4, "LDM enabled by default (window size >= 128MB, strategy >= btopt)");
+        cctxParams->ldmParams.enableLdm = 1;
+    }
+
+    if (ZSTD_CParams_useBlockSplitter(&params->cParams)) {
+        DEBUGLOG(4, "Block splitter enabled by default (window size >= 128K, strategy >= btopt)");
+        cctxParams->splitBlocks = 1;
+    }
 }
 
 size_t ZSTD_CCtxParams_init_advanced(ZSTD_CCtx_params* cctxParams, ZSTD_parameters params)
@@ -3321,6 +3332,7 @@ static size_t ZSTD_estimateBlockSize(const BYTE* literals, size_t litSize,
  */
 static size_t ZSTD_buildEntropyStatisticsAndEstimateSubBlockSize(seqStore_t* seqStore, const ZSTD_CCtx* zc) {
     ZSTD_entropyCTablesMetadata_t entropyMetadata;
+    DEBUGLOG(6, "ZSTD_buildEntropyStatisticsAndEstimateSubBlockSize()");
     FORWARD_IF_ERROR(ZSTD_buildBlockEntropyStats(seqStore,
                     &zc->blockState.prevCBlock->entropy,
                     &zc->blockState.nextCBlock->entropy,
@@ -3474,6 +3486,7 @@ static size_t ZSTD_compressSeqStore_singleBlock(ZSTD_CCtx* zc, seqStore_t* const
     if (isPartition)
         ZSTD_seqStore_resolveOffCodes(dRep, cRep, seqStore, (U32)(seqStore->sequences - seqStore->sequencesStart));
 
+    RETURN_ERROR_IF(dstCapacity < ZSTD_blockHeaderSize, dstSize_tooSmall, "Block header doesn't fit");
     cSeqsSize = ZSTD_entropyCompressSeqStore(seqStore,
                 &zc->blockState.prevCBlock->entropy, &zc->blockState.nextCBlock->entropy,
                 &zc->appliedParams,
@@ -3499,9 +3512,6 @@ static size_t ZSTD_compressSeqStore_singleBlock(ZSTD_CCtx* zc, seqStore_t* const
         return 0;
     }
 
-    if (zc->blockState.prevCBlock->entropy.fse.offcode_repeatMode == FSE_repeat_valid)
-        zc->blockState.prevCBlock->entropy.fse.offcode_repeatMode = FSE_repeat_check;
-
     if (cSeqsSize == 0) {
         cSize = ZSTD_noCompressBlock(op, dstCapacity, ip, srcSize, lastBlock);
         FORWARD_IF_ERROR(cSize, "Nocompress block failed");
@@ -3518,6 +3528,10 @@ static size_t ZSTD_compressSeqStore_singleBlock(ZSTD_CCtx* zc, seqStore_t* const
         cSize = ZSTD_blockHeaderSize + cSeqsSize;
         DEBUGLOG(4, "Writing out compressed block, size: %zu", cSize);
     }
+
+    if (zc->blockState.prevCBlock->entropy.fse.offcode_repeatMode == FSE_repeat_valid)
+        zc->blockState.prevCBlock->entropy.fse.offcode_repeatMode = FSE_repeat_check;
+
     return cSize;
 }
 
@@ -3553,6 +3567,7 @@ static void ZSTD_deriveBlockSplitsHelper(seqStoreSplits* splits, size_t startIdx
     size_t midIdx = (startIdx + endIdx)/2;
 
     if (endIdx - startIdx < MIN_SEQUENCES_BLOCK_SPLITTING || splits->idx >= MAX_NB_SPLITS) {
+        DEBUGLOG(6, "ZSTD_deriveBlockSplitsHelper: Too few sequences");
         return;
     }
     ZSTD_deriveSeqStoreChunk(&fullSeqStoreChunk, origSeqStore, startIdx, endIdx);
