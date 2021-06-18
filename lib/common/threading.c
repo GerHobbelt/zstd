@@ -20,7 +20,7 @@
 /* create fake symbol to avoid empty translation unit warning */
 int g_ZSTD_threading_useless_symbol;
 
-#if defined(ZSTD_MULTITHREAD) && defined(_WIN32)
+#if defined(ZSTD_MULTITHREAD) && defined(_WIN32) && !defined(ZSTD_MULTITHREAD_WINXP_SUPPORT)
 
 /**
  * Windows minimalist Pthread Wrapper
@@ -132,7 +132,7 @@ int ZSTD_pthread_join(ZSTD_pthread_t thread)
 
 #endif   /* ZSTD_MULTITHREAD */
 
-#if defined(ZSTD_MULTITHREAD) && DEBUGLEVEL >= 1 && !defined(_WIN32)
+#if defined(ZSTD_MULTITHREAD) && DEBUGLEVEL >= 1 && (!defined(_WIN32) || defined(ZSTD_MULTITHREAD_WINXP_SUPPORT))
 
 #define ZSTD_DEPS_NEED_MALLOC
 #include "zstd_deps.h"
