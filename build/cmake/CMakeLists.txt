@@ -106,6 +106,15 @@ option(ZSTD_MULTITHREAD_SUPPORT "MULTITHREADING SUPPORT" ${ZSTD_MULTITHREAD_SUPP
 
 if (ZSTD_MULTITHREAD_SUPPORT)
     message(STATUS "ZSTD_MULTITHREAD_SUPPORT is enabled")
+    if (MINGW OR MSVC)
+        # Multi-threading support on Windows XP (requires winpthreads library)
+        option(ZSTD_MULTITHREAD_WINXP_SUPPORT "MULTITHREADING SUPPORT ON WINDOWS XP" OFF)
+        if (ZSTD_MULTITHREAD_WINXP_SUPPORT)
+            message(STATUS "ZSTD_MULTITHREAD_WINXP_SUPPORT is enabled")
+        else ()
+            message(STATUS "ZSTD_MULTITHREAD_WINXP_SUPPORT is disabled")
+        endif ()
+    endif ()
 else ()
     message(STATUS "ZSTD_MULTITHREAD_SUPPORT is disabled")
 endif ()
@@ -127,7 +136,7 @@ endif ()
 #-----------------------------------------------------------------------------
 # External dependencies
 #-----------------------------------------------------------------------------
-if (ZSTD_MULTITHREAD_SUPPORT AND UNIX)
+if (ZSTD_MULTITHREAD_SUPPORT AND (UNIX OR ((MINGW OR MSVC) AND ZSTD_MULTITHREAD_WINXP_SUPPORT)))
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
     if(CMAKE_USE_PTHREADS_INIT)
