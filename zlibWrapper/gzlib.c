@@ -62,7 +62,8 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
     state = (gz_state *)zng_alloc(sizeof(gz_state));
     if (state == NULL)
         return NULL;
-    state->size = 0;            /* no buffers allocated yet */
+	memset(state, 0, sizeof(*state));
+	state->size = 0;            /* no buffers allocated yet */
     state->want = GZBUFSIZE;    /* requested buffer size */
     state->msg = NULL;          /* no error message yet */
 

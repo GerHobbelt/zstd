@@ -60,6 +60,9 @@
 #include <assert.h>
 #include "zstd_zlibwrapper.h"
 
+#include "../programs/monolithic_examples.h"
+
+
 #define LOG_FITBLK(...)   /*printf(__VA_ARGS__)*/
 #define local static
 

@@ -28,6 +28,7 @@
 
 #include "zstd_zlibwrapper.h"
 
+#include "../programs/monolithic_examples.h"
 
 
 /*-************************************
