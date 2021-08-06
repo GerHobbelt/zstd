@@ -450,7 +450,7 @@ void ZSTD_dedicatedDictSearch_lazy_loadDictionary(ZSTD_matchState_t* ms, const B
     U32* const chainTable = ms->chainTable;
     U32 const chainSize = 1 << ms->cParams.chainLog;
     U32 idx = ms->nextToUpdate;
-    U32 const minChain = chainSize < target ? target - chainSize : idx;
+    U32 const minChain = chainSize < target - idx ? target - chainSize : idx;
     U32 const bucketSize = 1 << ZSTD_LAZY_DDSS_BUCKET_LOG;
     U32 const cacheSize = bucketSize - 1;
     U32 const chainAttempts = (1 << ms->cParams.searchLog) - cacheSize;
@@ -1176,9 +1176,10 @@ size_t ZSTD_RowFindBestMatch_generic (
 
     /* DMS/DDS variables that may be referenced laster */
     const ZSTD_matchState_t* const dms = ms->dictMatchState;
-    size_t ddsIdx;
-    U32 ddsExtraAttempts; /* cctx hash tables are limited in searches, but allow extra searches into DDS */
-    U32 dmsTag;
+    /* Initialize the following variables to satisfy static analyzer */
+    size_t ddsIdx = 0;
+    U32 ddsExtraAttempts = 0; /* cctx hash tables are limited in searches, but allow extra searches into DDS */
+    U32 dmsTag = 0;
     U32* dmsRow = NULL;
     BYTE* dmsTagRow = NULL;
 
