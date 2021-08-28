@@ -42,6 +42,18 @@
 #  define ZSTD_COMPRESS_HEAPMODE 0
 #endif
 
+/*!
+ * ZSTD_HASHLOG3_MAX :
+ * Maximum size of the hash table dedicated to find 3-bytes matches,
+ * in log format, aka 17 => 1 << 17 == 128Ki positions.
+ * This structure is only used in zstd_opt.
+ * Since allocation is centralized for all strategies, it has to be known here.
+ * The actual (selected) size of the hash table is then stored in ZSTD_matchState_t.hashLog3,
+ * so that zstd_opt.c doesn't need to know about this constant.
+ */
+#ifndef ZSTD_HASHLOG3_MAX
+#  define ZSTD_HASHLOG3_MAX 17
+#endif
 
 /*-*************************************
 *  Helper functions
@@ -1785,8 +1797,8 @@ ZSTD_reset_matchState(ZSTD_matchState_t* ms,
             if (ms->tagTable) ZSTD_memset(ms->tagTable, 0, tagTableSize);
         }
         {   /* Switch to 32-entry rows if searchLog is 5 (or more) */
-            U32 const rowLog = cParams->searchLog < 5 ? 4 : 5;
-            assert(cParams->hashLog > rowLog);
+            U32 const rowLog = MAX(MIN(cParams->searchLog, 6), 4);
+            assert(cParams->hashLog >= rowLog);
             ms->rowHashLog = cParams->hashLog - rowLog;
         }
     }
@@ -3732,9 +3744,9 @@ static size_t ZSTD_compressBlock_splitBlock(ZSTD_CCtx* zc,
 }
 
 /* ZSTD_convertBlockSequencesToSeqStore()
- * Converts an array of ZSTD_Sequence* with the corresponding original src buffer into 
+ * Converts an array of ZSTD_Sequence* with the corresponding original src buffer into
  * the seqStore of a cctx.
- * 
+ *
  * Returns 0 on success, ZSTD_error on failure.
  */
 static UNUSED_ATTR size_t ZSTD_convertBlockSequencesToSeqStore(ZSTD_CCtx* cctx,
@@ -6187,14 +6199,14 @@ static const ZSTD_compressionParameters ZSTD_defaultCParameters[4][ZSTD_MAX_CLEV
     { 20, 15, 16,  1,  6,  0, ZSTD_fast    },  /* level  2 */
     { 21, 16, 17,  1,  5,  0, ZSTD_dfast   },  /* level  3 */
     { 21, 18, 18,  1,  5,  0, ZSTD_dfast   },  /* level  4 */
-    { 21, 18, 19,  2,  5,  2, ZSTD_greedy  },  /* level  5 */
-    { 21, 19, 19,  3,  5,  4, ZSTD_greedy  },  /* level  6 */
-    { 21, 19, 19,  3,  5,  8, ZSTD_lazy    },  /* level  7 */
-    { 21, 19, 19,  3,  5, 16, ZSTD_lazy2   },  /* level  8 */
-    { 21, 19, 20,  4,  5, 16, ZSTD_lazy2   },  /* level  9 */
-    { 22, 20, 21,  4,  5, 16, ZSTD_lazy2   },  /* level 10 */
-    { 22, 21, 22,  4,  5, 16, ZSTD_lazy2   },  /* level 11 */
-    { 22, 21, 22,  5,  5, 16, ZSTD_lazy2   },  /* level 12 */
+    { 21, 18, 19,  4,  5,  2, ZSTD_greedy  },  /* level  5 */
+    { 21, 19, 20,  5,  5,  4, ZSTD_greedy  },  /* level  6 */
+    { 21, 19, 20,  4,  5,  8, ZSTD_lazy    },  /* level  7 */
+    { 21, 19, 20,  5,  5, 16, ZSTD_lazy    },  /* level  8 */
+    { 21, 20, 21,  4,  5, 16, ZSTD_lazy2   },  /* level  9 */
+    { 22, 21, 22,  4,  5, 16, ZSTD_lazy2   },  /* level 10 */
+    { 22, 21, 22,  5,  5, 16, ZSTD_lazy2   },  /* level 11 */
+    { 22, 21, 22,  6,  5, 32, ZSTD_lazy2   },  /* level 12 */
     { 22, 21, 22,  5,  5, 32, ZSTD_btlazy2 },  /* level 13 */
     { 22, 22, 23,  5,  5, 32, ZSTD_btlazy2 },  /* level 14 */
     { 22, 23, 23,  6,  5, 32, ZSTD_btlazy2 },  /* level 15 */
@@ -6212,8 +6224,8 @@ static const ZSTD_compressionParameters ZSTD_defaultCParameters[4][ZSTD_MAX_CLEV
     { 18, 13, 14,  1,  6,  0, ZSTD_fast    },  /* level  1 */
     { 18, 14, 14,  1,  5,  0, ZSTD_dfast   },  /* level  2 */
     { 18, 16, 16,  1,  4,  0, ZSTD_dfast   },  /* level  3 */
-    { 18, 16, 17,  2,  5,  2, ZSTD_greedy  },  /* level  4.*/
-    { 18, 18, 18,  3,  5,  2, ZSTD_greedy  },  /* level  5.*/
+    { 18, 16, 17,  3,  5,  2, ZSTD_greedy  },  /* level  4.*/
+    { 18, 17, 18,  5,  5,  2, ZSTD_greedy  },  /* level  5.*/
     { 18, 18, 19,  3,  5,  4, ZSTD_lazy    },  /* level  6.*/
     { 18, 18, 19,  4,  4,  4, ZSTD_lazy    },  /* level  7 */
     { 18, 18, 19,  4,  4,  8, ZSTD_lazy2   },  /* level  8 */
@@ -6240,11 +6252,11 @@ static const ZSTD_compressionParameters ZSTD_defaultCParameters[4][ZSTD_MAX_CLEV
     { 17, 15, 16,  2,  5,  0, ZSTD_dfast   },  /* level  3 */
     { 17, 17, 17,  2,  4,  0, ZSTD_dfast   },  /* level  4 */
     { 17, 16, 17,  3,  4,  2, ZSTD_greedy  },  /* level  5 */
-    { 17, 17, 17,  3,  4,  4, ZSTD_lazy    },  /* level  6 */
-    { 17, 17, 17,  3,  4,  8, ZSTD_lazy2   },  /* level  7 */
-    { 17, 17, 17,  4,  4,  8, ZSTD_lazy2   },  /* level  8 */
-    { 17, 17, 17,  5,  4,  8, ZSTD_lazy2   },  /* level  9 */
-    { 17, 17, 17,  6,  4,  8, ZSTD_lazy2   },  /* level 10 */
+    { 17, 16, 17,  3,  4,  4, ZSTD_lazy    },  /* level  6 */
+    { 17, 16, 17,  3,  4,  8, ZSTD_lazy2   },  /* level  7 */
+    { 17, 16, 17,  4,  4,  8, ZSTD_lazy2   },  /* level  8 */
+    { 17, 16, 17,  5,  4,  8, ZSTD_lazy2   },  /* level  9 */
+    { 17, 16, 17,  6,  4,  8, ZSTD_lazy2   },  /* level 10 */
     { 17, 17, 17,  5,  4,  8, ZSTD_btlazy2 },  /* level 11 */
     { 17, 18, 17,  7,  4, 12, ZSTD_btlazy2 },  /* level 12 */
     { 17, 18, 17,  3,  4, 12, ZSTD_btopt   },  /* level 13.*/
