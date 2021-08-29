@@ -1199,5 +1199,5 @@ ZEXTERN const z_crc_t FAR * ZEXPORT z_get_crc_table    OF((void))
 ZEXTERN const char * ZEXPORT z_zError OF((int err))
 {
     /* Just use zlib Error function */
-    return zError(err);
+    return zng_zError(err);
 }
