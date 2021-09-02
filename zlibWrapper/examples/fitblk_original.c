@@ -54,7 +54,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "zlib.h"
+#ifdef ZLIB_COMPAT
+#  include "zlib.h"
+#else
+#  include "zlib-ng.h"
+#endif
 
 #define local static
 
