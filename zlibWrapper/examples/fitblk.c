@@ -144,7 +144,7 @@ local int recompress(zng_streamp inf, zng_streamp def)
 #define main(cnt, arr)      zstd_fitblk_example_main(cnt, arr)
 #endif
 
-int main(int argc, char **argv)
+int main(int argc, const char** argv)
 {
     int ret;                /* return code */
     unsigned size;          /* requested fixed output block size */

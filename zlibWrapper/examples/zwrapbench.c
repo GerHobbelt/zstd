@@ -108,19 +108,19 @@ static clock_t g_time = 0;
 ***************************************/
 static unsigned g_nbIterations = NBLOOPS;
 static size_t g_blockSize = 0;
-int g_additionalParam = 0;
+static int g_additionalParam = 0;
 
-void BMK_setNotificationLevel(unsigned level) { g_displayLevel=level; }
+static void BMK_setNotificationLevel(unsigned level) { g_displayLevel=level; }
 
-void BMK_setAdditionalParam(int additionalParam) { g_additionalParam=additionalParam; }
+static void BMK_setAdditionalParam(int additionalParam) { g_additionalParam=additionalParam; }
 
-void BMK_SetNbIterations(unsigned nbLoops)
+static void BMK_SetNbIterations(unsigned nbLoops)
 {
     g_nbIterations = nbLoops;
     DISPLAYLEVEL(3, "- test >= %u seconds per compression / decompression -\n", g_nbIterations);
 }
 
-void BMK_SetBlockSize(size_t blockSize)
+static void BMK_SetBlockSize(size_t blockSize)
 {
     g_blockSize = blockSize;
     DISPLAYLEVEL(2, "using blocks of size %u KB \n", (unsigned)(blockSize>>10));
@@ -876,7 +876,7 @@ static unsigned readU32FromChar(const char** stringPtr)
 #define main(cnt, arr)      zstd_zwrapbench_main(cnt, arr)
 #endif
 
-int main(int argCount, char** argv)
+int main(int argCount, const char** argv)
 {
     int argNb,
         main_pause=0,

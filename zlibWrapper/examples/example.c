@@ -45,7 +45,7 @@ void test_flush         (unsigned char *compr, z_size_t *comprLen);
 void test_sync          (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 void test_dict_deflate  (unsigned char *compr, size_t comprLen);
 void test_dict_inflate  (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
-int  main               (int argc, char *argv[]);
+int  main               (int argc, const char** argv);
 
 
 static alloc_func zalloc = NULL;

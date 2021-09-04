@@ -128,7 +128,7 @@ local int recompress(z_streamp inf, z_streamp def)
 #define MARGIN 8        /* amount to back off for completion */
 
 /* compress from stdin to fixed-size block on stdout */
-int main(int argc, char **argv)
+int main(int argc, const char** argv)
 {
     int ret;                /* return code */
     unsigned size;          /* requested fixed output block size */
