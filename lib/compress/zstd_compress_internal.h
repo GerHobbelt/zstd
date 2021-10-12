@@ -345,6 +345,22 @@ typedef enum {
     ZSTDb_buffered
 } ZSTD_buffered_policy_e;
 
+/**
+ * Struct that contains all elements of block splitter that should be allocated
+ * in a wksp.
+ */
+#define ZSTD_MAX_NB_BLOCK_SPLITS 196
+typedef struct {
+    seqStore_t fullSeqStoreChunk;
+    seqStore_t firstHalfSeqStore;
+    seqStore_t secondHalfSeqStore;
+    seqStore_t currSeqStore;
+    seqStore_t nextSeqStore;
+
+    U32 partitions[ZSTD_MAX_NB_BLOCK_SPLITS];
+    ZSTD_entropyCTablesMetadata_t entropyMetadata;
+} ZSTD_blockSplitCtx;
+
 struct ZSTD_CCtx_s {
     ZSTD_compressionStage_e stage;
     int cParamsChanged;                  /* == 1 if cParams(except wlog) or compression level are changed in requestedParams. Triggers transmission of new params to ZSTDMT (if available) then reset to 0. */
@@ -410,6 +426,9 @@ struct ZSTD_CCtx_s {
 #if ZSTD_TRACE
     ZSTD_TraceCtx traceCtx;
 #endif
+
+    /* Workspace for block splitter */
+    ZSTD_blockSplitCtx blockSplitCtx;
 };
 
 typedef enum { ZSTD_dtlm_fast, ZSTD_dtlm_full } ZSTD_dictTableLoadMethod_e;
@@ -1209,15 +1228,15 @@ MEM_STATIC U32 ZSTD_window_update(ZSTD_window_t* window,
  */
 MEM_STATIC U32 ZSTD_getLowestMatchIndex(const ZSTD_matchState_t* ms, U32 curr, unsigned windowLog)
 {
-    U32    const maxDistance = 1U << windowLog;
-    U32    const lowestValid = ms->window.lowLimit;
-    U32    const withinWindow = (curr - lowestValid > maxDistance) ? curr - maxDistance : lowestValid;
-    U32    const isDictionary = (ms->loadedDictEnd != 0);
+    U32 const maxDistance = 1U << windowLog;
+    U32 const lowestValid = ms->window.lowLimit;
+    U32 const withinWindow = (curr - lowestValid > maxDistance) ? curr - maxDistance : lowestValid;
+    U32 const isDictionary = (ms->loadedDictEnd != 0);
     /* When using a dictionary the entire dictionary is valid if a single byte of the dictionary
      * is within the window. We invalidate the dictionary (and set loadedDictEnd to 0) when it isn't
      * valid for the entire block. So this check is sufficient to find the lowest valid match index.
      */
-    U32    const matchLowest = isDictionary ? lowestValid : withinWindow;
+    U32 const matchLowest = isDictionary ? lowestValid : withinWindow;
     return matchLowest;
 }
 
