@@ -47,11 +47,13 @@
  * Disable when MSAN is enabled.
  */
 #if defined(__linux__) || defined(__linux) || defined(__APPLE__)
-# if ZSTD_MEMORY_SANITIZER || ZSTD_DATAFLOW_SANITIZER
+# if ZSTD_MEMORY_SANITIZER
+#  define HUF_ASM_SUPPORTED 0
+# elif ZSTD_DATAFLOW_SANITIZER
 #  define HUF_ASM_SUPPORTED 0
 # else
 #  define HUF_ASM_SUPPORTED 1
-#endif
+# endif
 #else
 # define HUF_ASM_SUPPORTED 0
 #endif
@@ -531,6 +533,8 @@ HUF_decodeStreamX1(BYTE* p, BIT_DStream_t* const bitDPtr, BYTE* const pEnd, cons
             HUF_DECODE_SYMBOLX1_2(p, bitDPtr);
             HUF_DECODE_SYMBOLX1_0(p, bitDPtr);
         }
+    } else {
+        BIT_reloadDStream(bitDPtr);
     }
 
     /* [0-3] symbols remaining */
@@ -1218,6 +1222,8 @@ HUF_decodeStreamX2(BYTE* p, BIT_DStream_t* bitDPtr, BYTE* const pEnd,
                 HUF_DECODE_SYMBOLX2_0(p, bitDPtr);
             }
         }
+    } else {
+        BIT_reloadDStream(bitDPtr);
     }
 
     /* closer to end : up to 2 symbols at a time */
