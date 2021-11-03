@@ -106,6 +106,22 @@ typedef struct {
     size_t ddictPtrCount;
 } ZSTD_DDictHashSet;
 
+#ifndef ZSTD_DECODER_INTERNAL_BUFFER
+#  define ZSTD_DECODER_INTERNAL_BUFFER  (1 << 16)
+#endif
+
+#define ZSTD_LBMIN 64
+#define ZSTD_LBMAX (128 << 10)
+
+/* extra buffer, compensates when dst is not large enough to store litBuffer */
+#define ZSTD_LITBUFFEREXTRASIZE  BOUNDED(ZSTD_LBMIN, ZSTD_DECODER_INTERNAL_BUFFER, ZSTD_LBMAX)
+
+typedef enum {
+    ZSTD_not_in_dst = 0,  /* Stored entirely within litExtraBuffer */
+    ZSTD_in_dst = 1,           /* Stored entirely within dst (in memory after current output write) */
+    ZSTD_split = 2            /* Split between litExtraBuffer and dst */
+} ZSTD_litLocation_e;
+
 struct ZSTD_DCtx_s
 {
     const ZSTD_seqSymbol* LLTptr;
@@ -171,7 +187,10 @@ struct ZSTD_DCtx_s
     ZSTD_outBuffer expectedOutBuffer;
 
     /* workspace */
-    BYTE litBuffer[ZSTD_BLOCKSIZE_MAX + WILDCOPY_OVERLENGTH];
+    BYTE* litBuffer;
+    const BYTE* litBufferEnd;
+    ZSTD_litLocation_e litBufferLocation;
+    BYTE litExtraBuffer[ZSTD_LITBUFFEREXTRASIZE + WILDCOPY_OVERLENGTH]; /* literal buffer can be split between storage within dst and within this scratch buffer */
     BYTE headerBuffer[ZSTD_FRAMEHEADERSIZE_MAX];
 
     size_t oversizedDuration;
