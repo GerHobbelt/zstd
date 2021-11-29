@@ -1,9 +1,16 @@
 #if !defined(HUF_DISABLE_ASM) && defined(__x86_64__)
 
+/* Stack marking
+ * ref: https://wiki.gentoo.org/wiki/Hardened/GNU_stack_quickstart
+ */
+#if defined(__linux__) && defined(__ELF__)
+.section .note.GNU-stack,"",%progbits
+#endif
+
 /* Calling convention:
  *
  * %rdi contains the first argument: HUF_DecompressAsmArgs*.
- * %rbp is'nt maintained (no frame pointer).
+ * %rbp isn't maintained (no frame pointer).
  * %rsp contains the stack pointer that grows down.
  *      No red-zone is assumed, only addresses >= %rsp are used.
  * All register contents are preserved.
@@ -123,7 +130,7 @@ HUF_decompress4X1_usingDTable_internal_bmi2_asm_loop:
     subq $24, %rsp
 
 .L_4X1_compute_olimit:
-    /* Computes how many iterations we can do savely
+    /* Computes how many iterations we can do safely
      * %r15, %rax may be clobbered
      * rbx, rdx must be saved
      * op3 & ip0 mustn't be clobbered
@@ -389,7 +396,7 @@ HUF_decompress4X2_usingDTable_internal_bmi2_asm_loop:
     subq $8, %rsp
 
 .L_4X2_compute_olimit:
-    /* Computes how many iterations we can do savely
+    /* Computes how many iterations we can do safely
      * %r15, %rax may be clobbered
      * rdx must be saved
      * op[1,2,3,4] & ip0 mustn't be clobbered
