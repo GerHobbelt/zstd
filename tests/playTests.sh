@@ -713,6 +713,10 @@ test -f tmp2
 test -f tmp3
 test -f tmp4
 
+println "test : survive the list of files with too long filenames (--filelist=FILE)"
+datagen -g5M > tmp_badList
+zstd -f --filelist=tmp_badList && die "should have failed : file name length is too long"
+
 println "test : survive a list of files which is text garbage (--filelist=FILE)"
 datagen > tmp_badList
 zstd -f --filelist=tmp_badList && die "should have failed : list is text garbage"
@@ -1018,12 +1022,8 @@ zstd -o tmpDict --train "$TESTDIR"/*.c "$PRGDIR"/*.c
 test -f tmpDict
 zstd --train "$TESTDIR"/*.c "$PRGDIR"/*.c
 test -f dictionary
-println "- Test dictionary training fails"
-echo "000000000000000000000000000000000" > tmpz
-zstd --train tmpz tmpz tmpz tmpz tmpz tmpz tmpz tmpz tmpz && die "Dictionary training should fail : source is all zeros"
 if [ -n "$hasMT" ]
 then
-  zstd --train -T0 tmpz tmpz tmpz tmpz tmpz tmpz tmpz tmpz tmpz && die "Dictionary training should fail : source is all zeros"
   println "- Create dictionary with multithreading enabled"
   zstd --train -T0 "$TESTDIR"/*.c "$PRGDIR"/*.c -o tmpDict
 fi
@@ -1538,6 +1538,11 @@ elif [ "$longCSize19wlog23" -gt "$optCSize19wlog23" ]; then
     exit 1
 fi
 
+if [ -n "$CHECK_CONSTRAINED_MEM" ]; then
+    println "\n===>  zsdt constrained memory tests "
+    # shellcheck disable=SC2039
+    (ulimit -Sv 500000 ; datagen -g2M | zstd -22 --single-thread --ultra > /dev/null)
+fi
 
 if [ "$1" != "--test-large-data" ]; then
     println "Skipping large data tests"
