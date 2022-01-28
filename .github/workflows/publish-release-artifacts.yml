@@ -5,8 +5,12 @@ on:
     types:
       - published
 
+env:
+  RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+  RELEASE_SIGNING_KEY_PASSPHRASE: ${{ secrets.RELEASE_SIGNING_KEY_PASSPHRASE }}
+
 jobs:
-  publish-release-artifacts:
+  soucecode_artifacts:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
@@ -15,9 +19,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Archive
-        env:
-          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
-          RELEASE_SIGNING_KEY_PASSPHRASE: ${{ secrets.RELEASE_SIGNING_KEY_PASSPHRASE }}
         run: |
           # compute file name
           export TAG="$(echo "$GITHUB_REF" | sed -n 's_^refs/tags/__p')"
@@ -59,6 +60,41 @@ jobs:
             gpg $GPG_BATCH_OPTS --armor --sign --sign-with signing@zstd.net --detach-sig --passphrase "$RELEASE_SIGNING_KEY_PASSPHRASE" --output $ZSTD_VERSION.tar.zst.sig $ZSTD_VERSION.tar.zst
             gpg $GPG_BATCH_OPTS --armor --sign --sign-with signing@zstd.net --detach-sig --passphrase "$RELEASE_SIGNING_KEY_PASSPHRASE" --output $ZSTD_VERSION.tar.gz.sig  $ZSTD_VERSION.tar.gz
           fi
+
+      - name: Upload soucecode_artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: zstd-files
+          path: artifacts/*
+
+  windows_artifacts:
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd build\VS_scripts
+          build.generic.cmd VS2019 x64 Release v142
+
+      - name: Upload soucecode_artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: zstd-files
+          path: artifacts/*
+
+  publish-artifacts:
+    needs: [soucecode_artifacts, windows_artifacts]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: zstd-files
+          path: artifacts
 
       - name: Publish
         uses: skx/github-action-publish-binaries@release-1.3
