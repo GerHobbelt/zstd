@@ -19,10 +19,10 @@ GOTO build
 :display_help
 
 echo Syntax: build.generic.cmd msbuild_version msbuild_platform msbuild_configuration msbuild_toolset
-echo   msbuild_version:          VS installed version (VS2012, VS2013, VS2015, VS2017, VS2019, ...)
+echo   msbuild_version:          VS installed version (VS2012, VS2013, VS2015, VS2017, VS2019, VS2022)
 echo   msbuild_platform:         Platform (x64 or Win32)
 echo   msbuild_configuration:    VS configuration (Release or Debug)
-echo   msbuild_toolset:          Platform Toolset (v100, v110, v120, v140, v141, v142, ...)
+echo   msbuild_toolset:          Platform Toolset (v100, v110, v120, v140, v141, v142, v143)
 
 EXIT /B 1
 
@@ -51,6 +51,16 @@ IF %msbuild_version% == VS2019 (
 	IF EXIST %msbuild_vs2019community% SET msbuild=%msbuild_vs2019community%
 	IF EXIST %msbuild_vs2019professional% SET msbuild=%msbuild_vs2019professional%
 	IF EXIST %msbuild_vs2019enterprise% SET msbuild=%msbuild_vs2019enterprise%
+)
+
+:: VS2022
+SET msbuild_vs2022community="%programfiles%\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe"
+SET msbuild_vs2022professional="%programfiles%\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"
+SET msbuild_vs2022enterprise="%programfiles%\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+IF %msbuild_version% == VS2022 (
+	IF EXIST %msbuild_vs2022community% SET msbuild=%msbuild_vs2022community%
+	IF EXIST %msbuild_vs2022professional% SET msbuild=%msbuild_vs2022professional%
+	IF EXIST %msbuild_vs2022enterprise% SET msbuild=%msbuild_vs2022enterprise%
 )
 
 SET project="%~p0\..\VS2010\zstd.sln"
