@@ -21,6 +21,24 @@ import tempfile
 import typing
 
 
+ZSTD_SYMLINKS = [
+    "zstd",
+    "zstdmt",
+    "unzstd",
+    "zstdcat",
+    "zcat",
+    "gzip",
+    "gunzip",
+    "gzcat",
+    "lzma",
+    "unlzma",
+    "xz",
+    "unxz",
+    "lz4",
+    "unlz4",
+]
+
+
 EXCLUDED_DIRS = {
     "bin",
     "common",
@@ -592,6 +610,16 @@ def run_tests(test_suites: TestSuites, options: Options) -> bool:
         return False
 
 
+def setup_zstd_symlink_dir(zstd_symlink_dir: str, zstd: str) -> None:
+    assert os.path.join("bin", "symlinks") in zstd_symlink_dir
+    if not os.path.exists(zstd_symlink_dir):
+        os.makedirs(zstd_symlink_dir)
+    for symlink in ZSTD_SYMLINKS:
+        path = os.path.join(zstd_symlink_dir, symlink)
+        if os.path.exists(path):
+            os.remove(path)
+        os.symlink(zstd, path)
+
 if __name__ == "__main__":
     CLI_TEST_DIR = os.path.dirname(sys.argv[0])
     REPO_DIR = os.path.join(CLI_TEST_DIR, "..", "..")
@@ -599,6 +627,7 @@ if __name__ == "__main__":
     TESTS_DIR = os.path.join(REPO_DIR, "tests")
     ZSTD_PATH = os.path.join(PROGRAMS_DIR, "zstd")
     ZSTDGREP_PATH = os.path.join(PROGRAMS_DIR, "zstdgrep")
+    ZSTDLESS_PATH = os.path.join(PROGRAMS_DIR, "zstdless")
     DATAGEN_PATH = os.path.join(TESTS_DIR, "datagen")
 
     parser = argparse.ArgumentParser(
@@ -631,6 +660,11 @@ if __name__ == "__main__":
         help="Sets the ZSTDGREP_BIN environment variable. Path of the zstdgrep CLI."
     )
     parser.add_argument(
+        "--zstdless",
+        default=ZSTDLESS_PATH,
+        help="Sets the ZSTDLESS_BIN environment variable. Path of the zstdless CLI."
+    )
+    parser.add_argument(
         "--datagen",
         default=DATAGEN_PATH,
         help="Sets the DATAGEN_BIN environment variable. Path to the datagen CLI."
@@ -655,17 +689,21 @@ if __name__ == "__main__":
         args.timeout = None
 
     args.test_dir = os.path.normpath(os.path.abspath(args.test_dir))
-    bin_dir = os.path.join(args.test_dir, "bin")
+    bin_dir = os.path.abspath(os.path.join(args.test_dir, "bin"))
+    zstd_symlink_dir = os.path.join(bin_dir, "symlinks")
     scratch_dir = os.path.join(args.test_dir, "scratch")
+
+    setup_zstd_symlink_dir(zstd_symlink_dir, os.path.abspath(args.zstd))
 
     env = {}
     if args.exec_prefix is not None:
         env["EXEC_PREFIX"] = args.exec_prefix
-    env["ZSTD_BIN"] = os.path.abspath(args.zstd)
+    env["ZSTD_SYMLINK_DIR"] = zstd_symlink_dir
     env["DATAGEN_BIN"] = os.path.abspath(args.datagen)
     env["ZSTDGREP_BIN"] = os.path.abspath(args.zstdgrep)
+    env["ZSTDLESS_BIN"] = os.path.abspath(args.zstdless)
     env["COMMON"] = os.path.abspath(os.path.join(args.test_dir, "common"))
-    env["PATH"] = os.path.abspath(bin_dir) + ":" + os.getenv("PATH", "")
+    env["PATH"] = bin_dir + ":" + os.getenv("PATH", "")
 
     opts = Options(
         env=env,
