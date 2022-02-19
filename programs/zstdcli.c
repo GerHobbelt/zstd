@@ -637,6 +637,11 @@ static void printVersion(void)
     #endif
         DISPLAYOUT("\n");
         if (g_displayLevel >= 4) {
+            /* library versions */
+            DISPLAYOUT("zlib version %s\n", FIO_zlibVersion());
+            DISPLAYOUT("lz4 version %s\n", FIO_lz4Version());
+            DISPLAYOUT("lzma version %s\n", FIO_lzmaVersion());
+
             /* posix support */
         #ifdef _POSIX_C_SOURCE
             DISPLAYOUT("_POSIX_C_SOURCE defined: %ldL\n", (long) _POSIX_C_SOURCE);
@@ -839,6 +844,7 @@ int main(int argCount, const char** argv)
     size_t streamSrcSize = 0;
     size_t targetCBlockSize = 0;
     size_t srcSizeHint = 0;
+    size_t nbInputFileNames = 0;
     int dictCLevel = g_defaultDictCLevel;
     unsigned dictSelect = g_defaultSelectivityLevel;
 #ifndef ZSTD_NODICT
@@ -1261,6 +1267,8 @@ int main(int argCount, const char** argv)
         }
     }
 
+    nbInputFileNames = filenames->tableSize; /* saving number of input files */
+    
     if (recursive) {  /* at this stage, filenameTable is a list of paths, which can contain both files and directories */
         UTIL_expandFNT(&filenames, followLinks);
     }
@@ -1363,7 +1371,17 @@ int main(int argCount, const char** argv)
 #endif
 
     /* No input filename ==> use stdin and stdout */
-    if (filenames->tableSize == 0) UTIL_refFilename(filenames, stdinmark);
+    if (filenames->tableSize == 0) {
+      /* It is possible that the input
+       was a number of empty directories. In this case
+       stdin and stdout should not be used */
+       if (nbInputFileNames > 0 ){
+        DISPLAYLEVEL(1, "please provide correct input file(s) or non-empty directories -- ignored \n");
+        CLEAN_RETURN(0);
+       }
+       UTIL_refFilename(filenames, stdinmark);
+    }
+    
     if (!strcmp(filenames->fileNames[0], stdinmark) && !outFileName)
         outFileName = stdoutmark;  /* when input is stdin, default output is stdout */
 
