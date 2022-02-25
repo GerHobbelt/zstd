@@ -9,6 +9,7 @@
  */
 
 #include "zstd_zlibwrapper.h"
+#include "deflate.h"
 
 #include <stdio.h>
 
@@ -47,7 +48,7 @@ static void test_dict_deflate  (unsigned char *compr, size_t comprLen);
 static void test_dict_inflate  (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 
 #if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      zlib_example_main(cnt, arr)
+#define main(cnt, arr)      zstd_zlibWrapper_main(cnt, arr)
 #endif
 
 int  main               (int argc, const char** argv);
@@ -1006,7 +1007,6 @@ static void test_deflate_tune(unsigned char *compr, size_t comprLen) {
 /* ===========================================================================
  * Usage:  example [output.gz  [input.gz]]
  */
-
 int main(int argc, const char** argv)
 {
     unsigned char *compr, *uncompr;

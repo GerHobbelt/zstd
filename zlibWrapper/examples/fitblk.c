@@ -92,7 +92,7 @@ local int partcompress(FILE *in, zng_streamp def)
         if (feof(in))
             flush = Z_FINISH;
         LOG_FITBLK("partcompress1 avail_in=%d total_in=%d avail_out=%d total_out=%d\n", (int)def->avail_in, (int)def->total_in, (int)def->avail_out, (int)def->total_out);
-        ret = deflate(def, flush);
+        ret = zng_deflate(def, flush);
         LOG_FITBLK("partcompress2 ret=%d avail_in=%d total_in=%d avail_out=%d total_out=%d\n", ret, (int)def->avail_in, (int)def->total_in, (int)def->avail_out, (int)def->total_out);
         assert(ret != Z_STREAM_ERROR);
     } while (def->avail_out != 0 && flush == Z_SYNC_FLUSH);
@@ -115,7 +115,7 @@ local int recompress(zng_streamp inf, zng_streamp def)
         inf->avail_out = RAWLEN;
         inf->next_out = raw;
         LOG_FITBLK("recompress1inflate avail_in=%d total_in=%d avail_out=%d total_out=%d\n", (int)inf->avail_in, (int)inf->total_in, (int)inf->avail_out, (int)inf->total_out);
-        ret = inflate(inf, Z_NO_FLUSH);
+        ret = zng_inflate(inf, Z_NO_FLUSH);
         LOG_FITBLK("recompress2inflate avail_in=%d total_in=%d avail_out=%d total_out=%d\n", (int)inf->avail_in, (int)inf->total_in, (int)inf->avail_out, (int)inf->total_out);
         assert(ret != Z_STREAM_ERROR && ret != Z_DATA_ERROR &&
                ret != Z_NEED_DICT);
@@ -128,7 +128,7 @@ local int recompress(zng_streamp inf, zng_streamp def)
         if (inf->avail_out != 0)
             flush = Z_FINISH;
         LOG_FITBLK("recompress1deflate avail_in=%d total_in=%d avail_out=%d total_out=%d\n", (int)def->avail_in, (int)def->total_in, (int)def->avail_out, (int)def->total_out);
-        ret = deflate(def, flush);
+        ret = zng_deflate(def, flush);
         LOG_FITBLK("recompress2deflate ret=%d avail_in=%d total_in=%d avail_out=%d total_out=%d\n", ret, (int)def->avail_in, (int)def->total_in, (int)def->avail_out, (int)def->total_out);
         assert(ret != Z_STREAM_ERROR);
     } while (ret != Z_STREAM_END && def->avail_out != 0);
@@ -151,19 +151,20 @@ int main(int argc, const char** argv)
     unsigned have;          /* bytes written by deflate() call */
     unsigned char *blk;     /* intermediate and final stream */
     unsigned char *tmp;     /* close to desired size stream */
-    z_stream def, inf;      /* zlib deflate and inflate states */
+    zng_stream def, inf;      /* zlib deflate and inflate states */
+	char* argend;
 
     /* get requested output size */
     if (argc != 2)
         quit("need one argument: size of output block");
-    ret = (int)strtol(argv[1], argv + 1, 10);
-    if (argv[1][0] != 0)
+    ret = (int)strtol(argv[1], &argend, 10);
+    if (argend[0] != 0)
         quit("argument must be a number");
     if (ret < 8)            /* 8 is minimum zlib stream size */
         quit("need positive size of 8 or greater");
     size = (unsigned)ret;
 
-    printf("zlib version %s\n", ZLIB_VERSION);
+    printf("zlib version %s\n", ZLIBNG_VERSION);
     if (ZWRAP_isUsingZSTDcompression()) printf("zstd version %s\n", zstdVersion());
 
     /* allocate memory for buffers and compression engine */
@@ -171,7 +172,7 @@ int main(int argc, const char** argv)
     def.zalloc = Z_NULL;
     def.zfree = Z_NULL;
     def.opaque = Z_NULL;
-    ret = deflateInit(&def, Z_DEFAULT_COMPRESSION);
+    ret = zng_deflateInit(&def, Z_DEFAULT_COMPRESSION);
     if (ret != Z_OK || blk == NULL)
         quit("out of memory");
 
@@ -188,11 +189,11 @@ int main(int argc, const char** argv)
     if (ret == Z_STREAM_END && def.avail_out >= EXCESS) {
         /* write block to stdout */
         have = size + EXCESS - def.avail_out;
-   /*     if (fwrite(blk, 1, have, stdout) != have || ferror(stdout))
-    *         quit("error writing output"); */
+        if (fwrite(blk, 1, have, stdout) != have || ferror(stdout))
+            quit("error writing output");
 
         /* clean up and print results to stderr */
-        ret = deflateEnd(&def);
+        ret = zng_deflateEnd(&def);
         assert(ret != Z_STREAM_ERROR);
         free(blk);
         fprintf(stderr,
@@ -207,11 +208,11 @@ int main(int argc, const char** argv)
     inf.opaque = Z_NULL;
     inf.avail_in = 0;
     inf.next_in = Z_NULL;
-    ret = inflateInit(&inf);
+    ret = zng_inflateInit(&inf);
     tmp = (unsigned char*)malloc(size + EXCESS);
     if (ret != Z_OK || tmp == NULL)
         quit("out of memory");
-    ret = deflateReset(&def);
+    ret = zng_deflateReset(&def);
     assert(ret != Z_STREAM_ERROR);
 
     /* do first recompression close to the right amount */
@@ -226,9 +227,9 @@ int main(int argc, const char** argv)
         quit("out of memory");
 
     /* set up for next recompression */
-    ret = inflateReset(&inf);
+    ret = zng_inflateReset(&inf);
     assert(ret != Z_STREAM_ERROR);
-    ret = deflateReset(&def);
+    ret = zng_deflateReset(&def);
     assert(ret != Z_STREAM_ERROR);
 
     /* do second and final recompression (third compression) */
@@ -245,14 +246,14 @@ int main(int argc, const char** argv)
 
     /* done -- write block to stdout */
     have = size - def.avail_out;
-    /* if (fwrite(blk, 1, have, stdout) != have || ferror(stdout))
-     *     quit("error writing output"); */
+    if (fwrite(blk, 1, have, stdout) != have || ferror(stdout))
+        quit("error writing output");
 
     /* clean up and print results to stderr */
     free(tmp);
-    ret = inflateEnd(&inf);
+    ret = zng_inflateEnd(&inf);
     assert(ret != Z_STREAM_ERROR);
-    ret = deflateEnd(&def);
+    ret = zng_deflateEnd(&def);
     assert(ret != Z_STREAM_ERROR);
     free(blk);
     fprintf(stderr,
