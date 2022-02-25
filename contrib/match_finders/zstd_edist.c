@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define ZSTD_DEPS_NEED_MALLOC
+#include "zstd_deps.h"  /* size_t, ZSTD_malloc, ZSTD_free, ZSTD_memcpy */
 #include "zstd_edist.h"
 #include "mem.h"
 
@@ -403,8 +405,7 @@ static void ZSTD_eDist_combineMatches(ZSTD_eDist_state* state)
     /* Create a new buffer to put the combined matches into 
      * and memcpy to state->matches after */ 
     ZSTD_eDist_match* combinedMatches = 
-        ZSTD_malloc(state->nbMatches * sizeof(ZSTD_eDist_match), 
-        ZSTD_defaultCMem);
+        ZSTD_malloc(state->nbMatches * sizeof(ZSTD_eDist_match));
 
     U32 nbCombinedMatches = 1;
     size_t i;
@@ -434,7 +435,7 @@ static void ZSTD_eDist_combineMatches(ZSTD_eDist_state* state)
     }
     memcpy(state->matches, combinedMatches, nbCombinedMatches * sizeof(ZSTD_eDist_match));
     state->nbMatches = nbCombinedMatches;
-    ZSTD_free(combinedMatches, ZSTD_defaultCMem);
+    ZSTD_free(combinedMatches);
 }
 
 static size_t ZSTD_eDist_convertMatchesToSequences(ZSTD_Sequence* sequences, 
@@ -532,7 +533,7 @@ size_t ZSTD_eDist_genSequences(ZSTD_Sequence* sequences,
                         int useHeuristics)
 {
     size_t const nbDiags = dictSize + srcSize + 3;
-    S32* buffer = ZSTD_malloc(nbDiags * 2 * sizeof(S32), ZSTD_defaultCMem);
+    S32* buffer = ZSTD_malloc(nbDiags * 2 * sizeof(S32));
     ZSTD_eDist_state state;
     size_t nbSequences = 0;
 
@@ -544,15 +545,15 @@ size_t ZSTD_eDist_genSequences(ZSTD_Sequence* sequences,
     state.backwardDiag = buffer + nbDiags;
     state.forwardDiag += srcSize + 1;
     state.backwardDiag += srcSize + 1;
-    state.matches = ZSTD_malloc(srcSize * sizeof(ZSTD_eDist_match), ZSTD_defaultCMem);
+    state.matches = ZSTD_malloc(srcSize * sizeof(ZSTD_eDist_match));
     state.nbMatches = 0;
 
     ZSTD_eDist_compare(&state, 0, dictSize, 0, srcSize, 1);
     ZSTD_eDist_combineMatches(&state);
     nbSequences = ZSTD_eDist_convertMatchesToSequences(sequences, &state);
 
-    ZSTD_free(buffer, ZSTD_defaultCMem);
-    ZSTD_free(state.matches, ZSTD_defaultCMem);
+    ZSTD_free(buffer);
+    ZSTD_free(state.matches);
 
     return nbSequences;
 }

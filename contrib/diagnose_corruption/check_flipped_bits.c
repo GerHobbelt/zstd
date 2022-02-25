@@ -16,8 +16,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <stdint.h>
 #include <sys/stat.h>
+#if !defined(_WIN32)
 #include <unistd.h>
+#endif
 
 typedef struct {
   char *input;
@@ -81,7 +84,7 @@ static char* readFile(const char* filename, size_t* size) {
 
   ret = stat(filename, &statbuf);
   if (ret != 0) {
-    fprintf(stderr, "stat failed: %m\n");
+    fprintf(stderr, "stat('%s') failed: %s\n", filename, strerror(errno));
     return NULL;
   }
   if ((statbuf.st_mode & S_IFREG) != S_IFREG) {
@@ -93,20 +96,20 @@ static char* readFile(const char* filename, size_t* size) {
 
   f = fopen(filename, "r");
   if (f == NULL) {
-    fprintf(stderr, "fopen failed: %m\n");
+    fprintf(stderr, "fopen('%s') failed: %s\n", filename, strerror(errno));
     return NULL;
   }
 
   buf = malloc(*size);
   if (buf == NULL) {
-    fprintf(stderr, "malloc failed\n");
+    fprintf(stderr, "malloc(%u) failed\n", (unsigned)(*size));
     fclose(f);
     return NULL;
   }
 
   bytes_read = fread(buf, 1, *size, f);
   if (bytes_read != *size) {
-    fprintf(stderr, "failed to read whole file\n");
+    fprintf(stderr, "failed to read whole file: %s\n", strerror(errno));
     fclose(f);
     free(buf);
     return NULL;
@@ -114,7 +117,7 @@ static char* readFile(const char* filename, size_t* size) {
 
   ret = fclose(f);
   if (ret != 0) {
-    fprintf(stderr, "fclose failed: %m\n");
+    fprintf(stderr, "fclose failed: %s\n", strerror(errno));
     free(buf);
     return NULL;
   }

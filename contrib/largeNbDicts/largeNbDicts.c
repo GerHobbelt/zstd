@@ -950,7 +950,7 @@ int main (int argc, const char** argv)
 
     for (int argNb = 1; argNb < argc ; argNb++) {
         const char* argument = argv[argNb];
-        if (!strcmp(argument, "-h")) { free(nameTable); return usage(exeName); }
+        if (!strcmp(argument, "-h")) { free((void *)nameTable); return usage(exeName); }
         if (!strcmp(argument, "-d")) { benchCompression = 0; continue; }
         if (!strcmp(argument, "-z")) { benchCompression = 1; continue; }
         if (!strcmp(argument, "-r")) { recursiveMode = 1; continue; }
@@ -991,7 +991,7 @@ int main (int argc, const char** argv)
     int result = bench(filenameTable->fileNames, (unsigned)filenameTable->tableSize, dictionary, blockSize, cLevel, nbDicts, nbBlocks, nbRounds, benchCompression, dictContentType, cctxParams);
 
     UTIL_freeFileNamesTable(filenameTable);
-    free(nameTable);
+    free((void *)nameTable);
     ZSTD_freeCCtxParams(cctxParams);
 
     return result;

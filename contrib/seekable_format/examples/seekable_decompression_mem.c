@@ -12,11 +12,16 @@
 #include <stdio.h>     // fprintf, perror, feof
 #include <string.h>    // strerror
 #include <errno.h>     // errno
+#include <sys/types.h> // _off_t / off_t
 #define ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>      // presumes zstd library is installed
 #include <zstd_errors.h>
 
 #include "zstd_seekable.h"
+
+#if !defined(_OFF_T_DEFINED) && defined(_MSC_VER)
+typedef _off_t off_t;
+#endif
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 

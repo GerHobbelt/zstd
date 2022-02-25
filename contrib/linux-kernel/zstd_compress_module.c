@@ -9,6 +9,8 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
+#if !defined(_MSC_VER)
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/string.h>
@@ -158,3 +160,5 @@ EXPORT_SYMBOL(zstd_end_stream);
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_DESCRIPTION("Zstd Compressor");
+
+#endif
