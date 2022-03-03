@@ -21,6 +21,8 @@
 #include <string>
 #include <type_traits>
 
+#undef min   // nuke `min()` defines which clash with the use of `std::min()`
+
 namespace pzstd {
 
 namespace detail {
