@@ -181,6 +181,9 @@
 #    ifdef __AVX2__  //MSVC does not have a BMI2 specific flag, but every CPU that supports AVX2 also supports BMI2
 #       include <immintrin.h>
 #       define STATIC_BMI2 1
+#if !defined(_WIN64)
+#       define ZSTD_NO_BZHI_INTRINSIC 1      // bzhi is only supported in 64bit builds.
+#endif
 #    endif
 #  elif defined(__BMI2__) && defined(__x86_64__) && defined(__GNUC__)
 #    define STATIC_BMI2 1
