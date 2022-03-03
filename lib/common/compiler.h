@@ -182,6 +182,8 @@
 #       include <immintrin.h>
 #       define STATIC_BMI2 1
 #    endif
+#  elif defined(__BMI2__) && defined(__x86_64__) && defined(__GNUC__)
+#    define STATIC_BMI2 1
 #  endif
 #endif
 
