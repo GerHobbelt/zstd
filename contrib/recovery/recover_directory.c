@@ -85,7 +85,13 @@ static int computePadding(size_t numFrames) {
   return snprintf(NULL, 0, "%u", (unsigned)numFrames);
 }
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_recover_directory_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
   if (argc != 3) {
     usage(argv[0]);
     exit(1);

@@ -926,7 +926,12 @@ int bad_usage(const char* exeName)
     return 1;
 }
 
-int main (int argc, const char** argv)
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_large_nbdicts_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
     int recursiveMode = 0;
     int benchCompression = 1;

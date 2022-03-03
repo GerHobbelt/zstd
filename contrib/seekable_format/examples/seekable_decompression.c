@@ -124,6 +124,11 @@ static void decompressFile_orDie(const char* fname, off_t startOffset, off_t end
 }
 
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_seekable_decompression_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     const char* const exeName = argv[0];

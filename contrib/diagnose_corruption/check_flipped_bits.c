@@ -191,7 +191,7 @@ static ZSTD_DDict* readDictByID(stuff_t *stuff, int32_t dict_id, char **buf, siz
   }
 }
 
-static int init_stuff(stuff_t* stuff, int argc, char *argv[]) {
+static int init_stuff(stuff_t* stuff, int argc, const char *argv[]) {
   const char* input_filename;
 
   if (argc < 2) {
@@ -378,7 +378,13 @@ static int perturb_bytes(stuff_t* stuff) {
   return 1;
 }
 
-int main(int argc, char* argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_check_flipped_bits_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
   stuff_t stuff;
 
   if(!init_stuff(&stuff, argc, argv)) {
