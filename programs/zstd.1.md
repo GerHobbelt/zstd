@@ -139,7 +139,7 @@ the last one takes effect.
     _note_ : at the time of this writing, `--adapt` can remain stuck at low speed
     when combined with multiple worker threads (>=2).
 * `--long[=#]`:
-    enables long distance matching with `#` `windowLog`, if not `#` is not
+    enables long distance matching with `#` `windowLog`, if `#` is not
     present it defaults to `27`.
     This increases the window size (`windowLog`) and memory usage for both the
     compressor and decompressor.
@@ -212,7 +212,7 @@ the last one takes effect.
     disable input and output checks. Allows overwriting existing files, input
     from console, output to stdout, operating on links, block devices, etc.
 * `-c`, `--stdout`:
-    write to standard output (even if it is the console)
+    write to standard output (even if it is the console); keep original files unchanged.
 * `--[no-]sparse`:
     enable / disable sparse FS support,
     to make files with many zeroes smaller on disk.
