@@ -21,6 +21,7 @@ int zstd_main(int argc, const char** argv);
 int zstd_fitblk_example_main(int argc, const char** argv);
 int zstd_mini_gzip_main(int argc, const char** argv);
 int zstd_zwrapbench_main(int argc, const char** argv);
+
 int zlib_deflate_quick_bi_valid_test_main();
 int zlib_deflate_quick_block_open_test_main();
 int zlib_example_main(int argc, const char** argv);

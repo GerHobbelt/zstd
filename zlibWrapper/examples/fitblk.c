@@ -257,7 +257,7 @@ int main(int argc, const char** argv)
     assert(ret != Z_STREAM_ERROR);
     free(blk);
     fprintf(stderr,
-            "%u bytes unused out of %u requested (%lu input)\n",
+            "%u bytes unused out of %u requested (%zu input)\n",
             size - have, size, def.total_in);
     return 0;
 }
