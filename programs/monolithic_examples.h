@@ -22,18 +22,8 @@ int zstd_fitblk_example_main(int argc, const char** argv);
 int zstd_mini_gzip_main(int argc, const char** argv);
 int zstd_zwrapbench_main(int argc, const char** argv);
 
-int zlib_deflate_quick_bi_valid_test_main();
-int zlib_deflate_quick_block_open_test_main();
-int zlib_example_main(int argc, const char** argv);
-int zlib_mini_deflate_main(int argc, const char** argv);
-int zlib_mini_gzip_main(int argc, const char** argv);
-int zlib_switchlevels_main(int argc, const char** argv);
-int zlib_mk_crc32_tables_main(int argc, const char** argv);
-int zlib_adler32_test_main();
-int zlib_hash_head_0_test_main();
-int zlib_infcover_test_main();
-int zlib_mk_fixed_table_main();
-int zlib_mk_trees_header_main();
+// These require the zstd_zlib_wrapper code to be included in the build:
+int zstd_zlib_example_main(int argc, const char** argv);
 
 #ifdef __cplusplus
 }

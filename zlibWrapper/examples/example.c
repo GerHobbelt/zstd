@@ -18,6 +18,8 @@
 #include <inttypes.h>
 #include <stdint.h>
 
+#include "../programs/monolithic_examples.h"
+
 #define TESTFILE "foo.gz"
 
 #define CHECK_ERR(err, msg) { \

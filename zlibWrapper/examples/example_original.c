@@ -3,8 +3,6 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#if !defined(BUILD_MONOLITHIC)
-
 #include "zbuild.h"
 #ifdef ZLIB_COMPAT
 #  include "zlib.h"
@@ -48,7 +46,6 @@ static void test_flush         (unsigned char *compr, z_size_t *comprLen);
 static void test_sync          (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 static void test_dict_deflate  (unsigned char *compr, size_t comprLen);
 static void test_dict_inflate  (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
-int  main               (int argc, const char** argv);
 
 
 static alloc_func zalloc = NULL;
@@ -1006,7 +1003,7 @@ static void test_deflate_tune(unsigned char *compr, size_t comprLen) {
  */
 
 #if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      zlib_example_main(cnt, arr)
+#define main(cnt, arr)      zstd_zlib_example_main(cnt, arr)
 #endif
 
 int main(int argc, const char** argv)
@@ -1075,5 +1072,3 @@ int main(int argc, const char** argv)
 
     return 0;
 }
-
-#endif
