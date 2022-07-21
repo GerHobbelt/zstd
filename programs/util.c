@@ -418,7 +418,7 @@ readLinesFromFile(void* dst, size_t dstCapacity,
     while ( !feof(inputFile) ) {
         size_t const lineLength = readLineFromFile(buf+pos, dstCapacity-pos, inputFile);
         if (lineLength == 0) break;
-        assert(pos + lineLength < dstCapacity);
+        assert(pos + lineLength <= dstCapacity); /* '=' for inputFile not terminated with '\n' */
         pos += lineLength;
         ++nbFiles;
     }
@@ -999,7 +999,7 @@ makeUniqueMirroredDestDirs(char** srcDirNames, unsigned nbFile, const char* outD
                                             trimPath(currDirName)))
             uniqueDirNr++;
 
-        /* we need maintain original src dir name instead of trimmed
+        /* we need to maintain original src dir name instead of trimmed
          * dir, so we can retrieve the original src dir's mode_t */
         uniqueDirNames[uniqueDirNr - 1] = currDirName;
     }

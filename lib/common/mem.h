@@ -51,6 +51,8 @@ extern "C" {
 #    include <stdint.h> /* intptr_t */
 #  endif
   typedef   uint8_t BYTE;
+  typedef   uint8_t U8;
+  typedef    int8_t S8;
   typedef  uint16_t U16;
   typedef   int16_t S16;
   typedef  uint32_t U32;
@@ -63,6 +65,8 @@ extern "C" {
 #  error "this implementation requires char to be exactly 8-bit type"
 #endif
   typedef unsigned char      BYTE;
+  typedef unsigned char      U8;
+  typedef   signed char      S8;
 #if USHRT_MAX != 65535
 #  error "this implementation requires short to be exactly 16-bit type"
 #endif
@@ -253,6 +257,14 @@ MEM_STATIC void MEM_write64(void* memPtr, U64 value)
 
 #endif /* MEM_FORCE_MEMORY_ACCESS */
 
+MEM_STATIC U32 MEM_swap32_fallback(U32 in)
+{
+    return  ((in << 24) & 0xff000000 ) |
+            ((in <<  8) & 0x00ff0000 ) |
+            ((in >>  8) & 0x0000ff00 ) |
+            ((in >> 24) & 0x000000ff );
+}
+
 MEM_STATIC U32 MEM_swap32(U32 in)
 {
 #if defined(_MSC_VER)     /* Visual Studio */
@@ -261,11 +273,20 @@ MEM_STATIC U32 MEM_swap32(U32 in)
   || (defined(__clang__) && __has_builtin(__builtin_bswap32))
     return __builtin_bswap32(in);
 #else
-    return  ((in << 24) & 0xff000000 ) |
-            ((in <<  8) & 0x00ff0000 ) |
-            ((in >>  8) & 0x0000ff00 ) |
-            ((in >> 24) & 0x000000ff );
+    return MEM_swap32_fallback(in);
 #endif
+}
+
+MEM_STATIC U64 MEM_swap64_fallback(U64 in)
+{
+     return  ((in << 56) & 0xff00000000000000ULL) |
+            ((in << 40) & 0x00ff000000000000ULL) |
+            ((in << 24) & 0x0000ff0000000000ULL) |
+            ((in << 8)  & 0x000000ff00000000ULL) |
+            ((in >> 8)  & 0x00000000ff000000ULL) |
+            ((in >> 24) & 0x0000000000ff0000ULL) |
+            ((in >> 40) & 0x000000000000ff00ULL) |
+            ((in >> 56) & 0x00000000000000ffULL);
 }
 
 MEM_STATIC U64 MEM_swap64(U64 in)
@@ -276,14 +297,7 @@ MEM_STATIC U64 MEM_swap64(U64 in)
   || (defined(__clang__) && __has_builtin(__builtin_bswap64))
     return __builtin_bswap64(in);
 #else
-    return  ((in << 56) & 0xff00000000000000ULL) |
-            ((in << 40) & 0x00ff000000000000ULL) |
-            ((in << 24) & 0x0000ff0000000000ULL) |
-            ((in << 8)  & 0x000000ff00000000ULL) |
-            ((in >> 8)  & 0x00000000ff000000ULL) |
-            ((in >> 24) & 0x0000000000ff0000ULL) |
-            ((in >> 40) & 0x000000000000ff00ULL) |
-            ((in >> 56) & 0x00000000000000ffULL);
+    return MEM_swap64_fallback(in);
 #endif
 }
 

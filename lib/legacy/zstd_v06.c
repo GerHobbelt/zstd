@@ -479,7 +479,7 @@ typedef enum { bt_compressed, bt_raw, bt_rle, bt_end } blockType_t;
 #define MIN_SEQUENCES_SIZE 1 /* nbSeq==0 */
 #define MIN_CBLOCK_SIZE (1 /*litCSize*/ + 1 /* RLE or RAW */ + MIN_SEQUENCES_SIZE /* nbSeq==0 */)   /* for a non-null block */
 
-#define HufLog 12
+#define ZSTD_HUFFDTABLE_CAPACITY_LOG 12
 
 #define IS_HUF 0
 #define IS_PCH 1
@@ -928,7 +928,7 @@ MEM_STATIC size_t BITv06_initDStream(BITv06_DStream_t* bitD, const void* srcBuff
 }
 
 /*! BITv06_lookBitsFast() :
-*   unsafe version; only works only if nbBits >= 1 */
+*   unsafe version; only works if nbBits >= 1 */
 MEM_STATIC size_t BITv06_lookBitsFast(const BITv06_DStream_t* bitD, U32 nbBits)
 {
     U32 const bitMask = sizeof(bitD->bitContainer)*8 - 1;
@@ -948,7 +948,7 @@ MEM_STATIC size_t BITv06_readBits(BITv06_DStream_t* bitD, U32 nbBits)
 }
 
 /*! BITv06_readBitsFast() :
-*   unsafe version; only works only if nbBits >= 1 */
+*   unsafe version; only works if nbBits >= 1 */
 MEM_STATIC size_t BITv06_readBitsFast(BITv06_DStream_t* bitD, U32 nbBits)
 {
     size_t const value = BITv06_lookBitsFast(bitD, nbBits);
@@ -2806,7 +2806,7 @@ struct ZSTDv06_DCtx_s
     FSEv06_DTable LLTable[FSEv06_DTABLE_SIZE_U32(LLFSELog)];
     FSEv06_DTable OffTable[FSEv06_DTABLE_SIZE_U32(OffFSELog)];
     FSEv06_DTable MLTable[FSEv06_DTABLE_SIZE_U32(MLFSELog)];
-    unsigned   hufTableX4[HUFv06_DTABLE_SIZE(HufLog)];
+    unsigned   hufTableX4[HUFv06_DTABLE_SIZE(ZSTD_HUFFDTABLE_CAPACITY_LOG)];
     const void* previousDstEnd;
     const void* base;
     const void* vBase;
@@ -2834,7 +2834,7 @@ size_t ZSTDv06_decompressBegin(ZSTDv06_DCtx* dctx)
     dctx->base = NULL;
     dctx->vBase = NULL;
     dctx->dictEnd = NULL;
-    dctx->hufTableX4[0] = HufLog;
+    dctx->hufTableX4[0] = ZSTD_HUFFDTABLE_CAPACITY_LOG;
     dctx->flagRepeatTable = 0;
     return 0;
 }

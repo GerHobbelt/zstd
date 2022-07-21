@@ -14,20 +14,26 @@ zstd_programs_sources = [join_paths(zstd_rootdir, 'programs/zstdcli.c'),
   join_paths(zstd_rootdir, 'programs/util.c'),
   join_paths(zstd_rootdir, 'programs/timefn.c'),
   join_paths(zstd_rootdir, 'programs/fileio.c'),
+  join_paths(zstd_rootdir, 'programs/fileio_asyncio.c'),
   join_paths(zstd_rootdir, 'programs/benchfn.c'),
   join_paths(zstd_rootdir, 'programs/benchzstd.c'),
   join_paths(zstd_rootdir, 'programs/datagen.c'),
   join_paths(zstd_rootdir, 'programs/dibio.c'),
-  join_paths(zstd_rootdir, 'programs/zstdcli_trace.c'),
-  # needed due to use of private symbol + -fvisibility=hidden
-  join_paths(zstd_rootdir, 'lib/common/xxhash.c')]
+  join_paths(zstd_rootdir, 'programs/zstdcli_trace.c')]
 
+zstd_deps = [ libzstd_internal_dep ]
 zstd_c_args = libzstd_debug_cflags
+
+zstd_frugal_deps = [ libzstd_internal_dep ]
+zstd_frugal_c_args = [ '-DZSTD_NOBENCH', '-DZSTD_NODICT', '-DZSTD_NOTRACE' ]
+
 if use_multi_thread
+  zstd_deps += [ thread_dep ]
   zstd_c_args += [ '-DZSTD_MULTITHREAD' ]
+  zstd_frugal_deps += [ thread_dep ]
+  zstd_frugal_c_args += [ '-DZSTD_MULTITHREAD' ]
 endif
 
-zstd_deps = [ libzstd_dep ]
 if use_zlib
   zstd_deps += [ zlib_dep ]
   zstd_c_args += [ '-DZSTD_GZCOMPRESS', '-DZSTD_GZDECOMPRESS' ]
@@ -55,7 +61,8 @@ endif
 if cc_id == compiler_msvc
   if default_library_type != 'static'
     zstd_programs_sources += [windows_mod.compile_resources(
-      join_paths(zstd_rootdir, 'build/VS2010/zstd/zstd.rc'))]
+      join_paths(zstd_rootdir, 'build/VS2010/zstd/zstd.rc'),
+      include_directories: libzstd_includes)]
   endif
 endif
 
@@ -69,14 +76,15 @@ zstd = executable('zstd',
 zstd_frugal_sources = [join_paths(zstd_rootdir, 'programs/zstdcli.c'),
   join_paths(zstd_rootdir, 'programs/timefn.c'),
   join_paths(zstd_rootdir, 'programs/util.c'),
-  join_paths(zstd_rootdir, 'programs/fileio.c')]
+  join_paths(zstd_rootdir, 'programs/fileio.c'),
+  join_paths(zstd_rootdir, 'programs/fileio_asyncio.c')]
 
 # Minimal target, with only zstd compression and decompression.
 # No bench. No legacy.
 executable('zstd-frugal',
   zstd_frugal_sources,
-  dependencies: libzstd_dep,
-  c_args: [ '-DZSTD_NOBENCH', '-DZSTD_NODICT', '-DZSTD_NOTRACE' ],
+  dependencies: zstd_frugal_deps,
+  c_args: zstd_frugal_c_args,
   install: true)
 
 install_data(join_paths(zstd_rootdir, 'programs/zstdgrep'),

@@ -82,11 +82,12 @@ message(STATUS "CMAKE_INSTALL_LIBDIR: ${CMAKE_INSTALL_LIBDIR}")
 #-----------------------------------------------------------------------------
 
 # Legacy support
-option(ZSTD_LEGACY_SUPPORT "LEGACY SUPPORT" OFF)
+option(ZSTD_LEGACY_SUPPORT "LEGACY SUPPORT" ON)
 
 if (ZSTD_LEGACY_SUPPORT)
     message(STATUS "ZSTD_LEGACY_SUPPORT defined!")
-    add_definitions(-DZSTD_LEGACY_SUPPORT=5)
+    set(ZSTD_LEGACY_LEVEL 5 CACHE STRING "")
+    add_definitions(-DZSTD_LEGACY_SUPPORT=${ZSTD_LEGACY_LEVEL})
 else ()
     message(STATUS "ZSTD_LEGACY_SUPPORT not defined!")
     add_definitions(-DZSTD_LEGACY_SUPPORT=0)

@@ -13,7 +13,7 @@
 *  Tuning parameters
 ****************************************/
 #ifndef BMK_TIMETEST_DEFAULT_S   /* default minimum time per test */
-#define BMK_TIMETEST_DEFAULT_S 3
+# define BMK_TIMETEST_DEFAULT_S 3
 #endif
 
 
@@ -31,9 +31,14 @@
 #include "timefn.h"      /* UTIL_time_t */
 #include "benchfn.h"
 #include "../lib/common/mem.h"
+#ifndef ZSTD_STATIC_LINKING_ONLY
 #define ZSTD_STATIC_LINKING_ONLY
+#endif
 #include "../lib/zstd.h"
 #include "datagen.h"     /* RDG_genBuffer */
+#ifndef XXH_INLINE_ALL
+#define XXH_INLINE_ALL
+#endif
 #include "../lib/common/xxhash.h"
 #include "benchzstd.h"
 #include "../lib/zstd_errors.h"
@@ -381,6 +386,13 @@ BMK_benchMemAdvancedNoAlloc(
     } else {
         RDG_genBuffer(compressedBuffer, maxCompressedSize, 0.10, 0.50, 1);
     }
+
+#if defined(UTIL_TIME_USES_C90_CLOCK)
+    if (adv->nbWorkers > 1) {
+        OUTPUTLEVEL(2, "Warning : time measurements restricted to C90 clock_t. \n")
+        OUTPUTLEVEL(2, "Warning : using C90 clock_t leads to incorrect measurements in multithreading mode. \n")
+    }
+#endif
 
     /* Bench */
     {   U64 const crcOrig = (adv->mode == BMK_decodeOnly) ? 0 : XXH64(srcBuffer, srcSize, 0);

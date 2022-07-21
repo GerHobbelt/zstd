@@ -26,6 +26,7 @@
 #include "zstd_decompress_internal.h"   /* ZSTD_DCtx */
 #include "zstd_ddict.h"  /* ZSTD_DDictDictContent */
 #include "zstd_decompress_block.h"
+#include "../common/bits.h"  /* ZSTD_highbit32 */
 
 /*_*******************************************************
 *  Macros
@@ -89,7 +90,7 @@ static void ZSTD_allocateLiteralsBuffer(ZSTD_DCtx* dctx, void* const dst, const 
             dctx->litBufferEnd = dctx->litBuffer + litSize - ZSTD_LITBUFFEREXTRASIZE;
         }
         else {
-            /* initially this will be stored entirely in dst during huffman decoding, it will partially shifted to litExtraBuffer after */
+            /* initially this will be stored entirely in dst during huffman decoding, it will partially be shifted to litExtraBuffer after */
             dctx->litBuffer = (BYTE*)dst + expectedWriteSize - litSize;
             dctx->litBufferEnd = (BYTE*)dst + expectedWriteSize;
         }
@@ -134,7 +135,7 @@ size_t ZSTD_decodeLiteralsBlock(ZSTD_DCtx* dctx,
             ZSTD_FALLTHROUGH;
 
         case set_compressed:
-            RETURN_ERROR_IF(srcSize < 5, corruption_detected, "srcSize >= MIN_CBLOCK_SIZE == 3; here we need up to 5 for case 3");
+            RETURN_ERROR_IF(srcSize < 5, corruption_detected, "srcSize >= MIN_CBLOCK_SIZE == 2; here we need up to 5 for case 3");
             {   size_t lhSize, litSize, litCSize;
                 U32 singleStream=0;
                 U32 const lhlCode = (istart[0] >> 2) & 3;
@@ -237,6 +238,7 @@ size_t ZSTD_decodeLiteralsBlock(ZSTD_DCtx* dctx,
                     break;
                 case 3:
                     lhSize = 3;
+                    RETURN_ERROR_IF(srcSize<3, corruption_detected, "srcSize >= MIN_CBLOCK_SIZE == 2; here we need lhSize = 3");
                     litSize = MEM_readLE24(istart) >> 4;
                     break;
                 }
@@ -279,12 +281,13 @@ size_t ZSTD_decodeLiteralsBlock(ZSTD_DCtx* dctx,
                     break;
                 case 1:
                     lhSize = 2;
+                    RETURN_ERROR_IF(srcSize<3, corruption_detected, "srcSize >= MIN_CBLOCK_SIZE == 2; here we need lhSize+1 = 3");
                     litSize = MEM_readLE16(istart) >> 4;
                     break;
                 case 3:
                     lhSize = 3;
+                    RETURN_ERROR_IF(srcSize<4, corruption_detected, "srcSize >= MIN_CBLOCK_SIZE == 2; here we need lhSize+1 = 4");
                     litSize = MEM_readLE24(istart) >> 4;
-                    RETURN_ERROR_IF(srcSize<4, corruption_detected, "srcSize >= MIN_CBLOCK_SIZE == 3; here we need lhSize+1 = 4");
                     break;
                 }
                 RETURN_ERROR_IF(litSize > 0 && dst == NULL, dstSize_tooSmall, "NULL not handled");
@@ -419,7 +422,7 @@ static const ZSTD_seqSymbol ML_defaultDTable[(1<<ML_DEFAULTNORMLOG)+1] = {
 };   /* ML_defaultDTable */
 
 
-static void ZSTD_buildSeqTable_rle(ZSTD_seqSymbol* dt, U32 baseValue, U32 nbAddBits)
+static void ZSTD_buildSeqTable_rle(ZSTD_seqSymbol* dt, U32 baseValue, U8 nbAddBits)
 {
     void* ptr = dt;
     ZSTD_seqSymbol_header* const DTableH = (ZSTD_seqSymbol_header*)ptr;
@@ -431,7 +434,7 @@ static void ZSTD_buildSeqTable_rle(ZSTD_seqSymbol* dt, U32 baseValue, U32 nbAddB
     cell->nbBits = 0;
     cell->nextState = 0;
     assert(nbAddBits < 255);
-    cell->nbAdditionalBits = (BYTE)nbAddBits;
+    cell->nbAdditionalBits = nbAddBits;
     cell->baseValue = baseValue;
 }
 
@@ -443,7 +446,7 @@ static void ZSTD_buildSeqTable_rle(ZSTD_seqSymbol* dt, U32 baseValue, U32 nbAddB
 FORCE_INLINE_TEMPLATE
 void ZSTD_buildFSETable_body(ZSTD_seqSymbol* dt,
             const short* normalizedCounter, unsigned maxSymbolValue,
-            const U32* baseValue, const U32* nbAdditionalBits,
+            const U32* baseValue, const U8* nbAdditionalBits,
             unsigned tableLog, void* wksp, size_t wkspSize)
 {
     ZSTD_seqSymbol* const tableDecode = dt+1;
@@ -510,10 +513,10 @@ void ZSTD_buildFSETable_body(ZSTD_seqSymbol* dt,
             }
         }
         /* Now we spread those positions across the table.
-         * The benefit of doing it in two stages is that we avoid the the
+         * The benefit of doing it in two stages is that we avoid the
          * variable size inner loop, which caused lots of branch misses.
          * Now we can run through all the positions without any branch misses.
-         * We unroll the loop twice, since that is what emperically worked best.
+         * We unroll the loop twice, since that is what empirically worked best.
          */
         {
             size_t position = 0;
@@ -551,10 +554,10 @@ void ZSTD_buildFSETable_body(ZSTD_seqSymbol* dt,
         for (u=0; u<tableSize; u++) {
             U32 const symbol = tableDecode[u].baseValue;
             U32 const nextState = symbolNext[symbol]++;
-            tableDecode[u].nbBits = (BYTE) (tableLog - BIT_highbit32(nextState) );
+            tableDecode[u].nbBits = (BYTE) (tableLog - ZSTD_highbit32(nextState) );
             tableDecode[u].nextState = (U16) ( (nextState << tableDecode[u].nbBits) - tableSize);
             assert(nbAdditionalBits[symbol] < 255);
-            tableDecode[u].nbAdditionalBits = (BYTE)nbAdditionalBits[symbol];
+            tableDecode[u].nbAdditionalBits = nbAdditionalBits[symbol];
             tableDecode[u].baseValue = baseValue[symbol];
         }
     }
@@ -563,7 +566,7 @@ void ZSTD_buildFSETable_body(ZSTD_seqSymbol* dt,
 /* Avoids the FORCE_INLINE of the _body() function. */
 static void ZSTD_buildFSETable_body_default(ZSTD_seqSymbol* dt,
             const short* normalizedCounter, unsigned maxSymbolValue,
-            const U32* baseValue, const U32* nbAdditionalBits,
+            const U32* baseValue, const U8* nbAdditionalBits,
             unsigned tableLog, void* wksp, size_t wkspSize)
 {
     ZSTD_buildFSETable_body(dt, normalizedCounter, maxSymbolValue,
@@ -573,7 +576,7 @@ static void ZSTD_buildFSETable_body_default(ZSTD_seqSymbol* dt,
 #if DYNAMIC_BMI2
 BMI2_TARGET_ATTRIBUTE static void ZSTD_buildFSETable_body_bmi2(ZSTD_seqSymbol* dt,
             const short* normalizedCounter, unsigned maxSymbolValue,
-            const U32* baseValue, const U32* nbAdditionalBits,
+            const U32* baseValue, const U8* nbAdditionalBits,
             unsigned tableLog, void* wksp, size_t wkspSize)
 {
     ZSTD_buildFSETable_body(dt, normalizedCounter, maxSymbolValue,
@@ -583,7 +586,7 @@ BMI2_TARGET_ATTRIBUTE static void ZSTD_buildFSETable_body_bmi2(ZSTD_seqSymbol* d
 
 void ZSTD_buildFSETable(ZSTD_seqSymbol* dt,
             const short* normalizedCounter, unsigned maxSymbolValue,
-            const U32* baseValue, const U32* nbAdditionalBits,
+            const U32* baseValue, const U8* nbAdditionalBits,
             unsigned tableLog, void* wksp, size_t wkspSize, int bmi2)
 {
 #if DYNAMIC_BMI2
@@ -605,7 +608,7 @@ void ZSTD_buildFSETable(ZSTD_seqSymbol* dt,
 static size_t ZSTD_buildSeqTable(ZSTD_seqSymbol* DTableSpace, const ZSTD_seqSymbol** DTablePtr,
                                  symbolEncodingType_e type, unsigned max, U32 maxLog,
                                  const void* src, size_t srcSize,
-                                 const U32* baseValue, const U32* nbAdditionalBits,
+                                 const U32* baseValue, const U8* nbAdditionalBits,
                                  const ZSTD_seqSymbol* defaultTable, U32 flagRepeatTable,
                                  int ddictIsCold, int nbSeq, U32* wksp, size_t wkspSize,
                                  int bmi2)
@@ -617,7 +620,7 @@ static size_t ZSTD_buildSeqTable(ZSTD_seqSymbol* DTableSpace, const ZSTD_seqSymb
         RETURN_ERROR_IF((*(const BYTE*)src) > max, corruption_detected, "");
         {   U32 const symbol = *(const BYTE*)src;
             U32 const baseline = baseValue[symbol];
-            U32 const nbBits = nbAdditionalBits[symbol];
+            U8 const nbBits = nbAdditionalBits[symbol];
             ZSTD_buildSeqTable_rle(DTableSpace, baseline, nbBits);
         }
         *DTablePtr = DTableSpace;
@@ -1169,9 +1172,27 @@ FORCE_INLINE_TEMPLATE seq_t
 ZSTD_decodeSequence(seqState_t* seqState, const ZSTD_longOffset_e longOffsets)
 {
     seq_t seq;
+    /*
+     * ZSTD_seqSymbol is a structure with a total of 64 bits wide. So it can be
+     * loaded in one operation and extracted its fields by simply shifting or
+     * bit-extracting on aarch64.
+     * GCC doesn't recognize this and generates more unnecessary ldr/ldrb/ldrh
+     * operations that cause performance drop. This can be avoided by using this
+     * ZSTD_memcpy hack.
+     */
+#if defined(__aarch64__) && (defined(__GNUC__) && !defined(__clang__))
+    ZSTD_seqSymbol llDInfoS, mlDInfoS, ofDInfoS;
+    ZSTD_seqSymbol* const llDInfo = &llDInfoS;
+    ZSTD_seqSymbol* const mlDInfo = &mlDInfoS;
+    ZSTD_seqSymbol* const ofDInfo = &ofDInfoS;
+    ZSTD_memcpy(llDInfo, seqState->stateLL.table + seqState->stateLL.state, sizeof(ZSTD_seqSymbol));
+    ZSTD_memcpy(mlDInfo, seqState->stateML.table + seqState->stateML.state, sizeof(ZSTD_seqSymbol));
+    ZSTD_memcpy(ofDInfo, seqState->stateOffb.table + seqState->stateOffb.state, sizeof(ZSTD_seqSymbol));
+#else
     const ZSTD_seqSymbol* const llDInfo = seqState->stateLL.table + seqState->stateLL.state;
     const ZSTD_seqSymbol* const mlDInfo = seqState->stateML.table + seqState->stateML.state;
     const ZSTD_seqSymbol* const ofDInfo = seqState->stateOffb.table + seqState->stateOffb.state;
+#endif
     seq.matchLength = mlDInfo->baseValue;
     seq.litLength = llDInfo->baseValue;
     {   U32 const ofBase = ofDInfo->baseValue;
@@ -1188,7 +1209,7 @@ ZSTD_decodeSequence(seqState_t* seqState, const ZSTD_longOffset_e longOffsets)
         U32 const ofnbBits = ofDInfo->nbBits;
         /*
          * As gcc has better branch and block analyzers, sometimes it is only
-         * valuable to mark likelyness for clang, it gives around 3-4% of
+         * valuable to mark likeliness for clang, it gives around 3-4% of
          * performance.
          */
 
@@ -1993,7 +2014,7 @@ ZSTD_decompressBlock_internal(ZSTD_DCtx* dctx,
 
     /* Decode literals section */
     {   size_t const litCSize = ZSTD_decodeLiteralsBlock(dctx, src, srcSize, dst, dstCapacity, streaming);
-        DEBUGLOG(5, "ZSTD_decodeLiteralsBlock : %u", (U32)litCSize);
+        DEBUGLOG(5, "ZSTD_decodeLiteralsBlock : cSize=%u, nbLiterals=%zu", (U32)litCSize, dctx->litSize);
         if (ZSTD_isError(litCSize)) return litCSize;
         ip += litCSize;
         srcSize -= litCSize;

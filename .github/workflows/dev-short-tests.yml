@@ -30,8 +30,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: make check on 32-bit
-      env:
-        CHECK_CONSTRAINED_MEM: true
       run: |
         sudo apt update
         APT_PACKAGES="gcc-multilib" make apt-install
@@ -177,7 +175,7 @@ jobs:
           CC=clang MOREFLAGS="-Werror -Wimplicit-fallthrough -O0" make -C lib -j libzstd.a ZSTD_LEGACY_SUPPORT=0
 
   cmake-visual-2019:
-    runs-on: windows-latest
+    runs-on: windows-2019
     strategy:
       matrix:
         include:
@@ -200,7 +198,7 @@ jobs:
         cmake.exe --build .
 
   visual-2019:
-    runs-on: windows-latest
+    runs-on: windows-2019
     strategy:
       matrix:
         platform: [x64, Win32]
@@ -216,22 +214,23 @@ jobs:
         msbuild "build\VS2010\zstd.sln" /m /verbosity:minimal /property:PlatformToolset=v142
         /t:Clean,Build /p:Platform=${{matrix.platform}} /p:Configuration=${{matrix.configuration}}
 
-  visual-2015:
-    # only GH actions windows-2016 contains VS 2015
-    runs-on: windows-2016
-    strategy:
-      matrix:
-        platform: [x64, Win32]
-        configuration: [Debug, Release]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-    - name: Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: >
-        msbuild "build\VS2010\zstd.sln" /m /verbosity:minimal /property:PlatformToolset=v140
-        /t:Clean,Build /p:Platform=${{matrix.platform}} /p:Configuration=${{matrix.configuration}}
+# TODO: fix as part of https://github.com/facebook/zstd/issues/3064
+#  visual-2015:
+#    # only GH actions windows-2016 contains VS 2015
+#    runs-on: windows-2016
+#    strategy:
+#      matrix:
+#        platform: [x64, Win32]
+#        configuration: [Debug, Release]
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: Add MSBuild to PATH
+#      uses: microsoft/setup-msbuild@v1.0.2
+#    - name: Build
+#      working-directory: ${{env.GITHUB_WORKSPACE}}
+#      run: >
+#        msbuild "build\VS2010\zstd.sln" /m /verbosity:minimal /property:PlatformToolset=v140
+#        /t:Clean,Build /p:Platform=${{matrix.platform}} /p:Configuration=${{matrix.configuration}}
 
   minimal-decompressor-macros:
     runs-on: ubuntu-latest
@@ -332,7 +331,7 @@ jobs:
         LDFLAGS="-static" CC=$XCC QEMU_SYS=$XEMU make clean check
 
   mingw-short-test:
-    runs-on: windows-latest
+    runs-on: windows-2019
     strategy:
       fail-fast: false
       matrix:
@@ -369,7 +368,7 @@ jobs:
 
 
   visual-runtime-tests:
-    runs-on: windows-latest
+    runs-on: windows-2019
     strategy:
       matrix:
         platform: [x64, Win32]
@@ -391,6 +390,27 @@ jobs:
         sh -e playTests.sh
         DIR
         .\fuzzer.exe -T2m
+
+  intel-cet-compatibility:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build Zstd
+      run: |
+        make -j zstd V=1
+        readelf -n zstd
+    - name: Get Intel SDE
+      run: |
+        curl -LO https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz
+        tar xJvf sde-external-9.0.0-2021-11-07-lin.tar.xz
+    - name: Configure Permissions
+      run: |
+        echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+    - name: Run Under SDE
+      run: |
+        sde-external-9.0.0-2021-11-07-lin/sde -cet -cet-raise 0 -cet-endbr-exe -cet-stderr -cet-abort -- ./zstd -b3
+
+
 
 # This test currently fails on Github Actions specifically.
 # Possible reason : TTY emulation.

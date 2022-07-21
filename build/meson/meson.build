@@ -12,7 +12,10 @@ project('zstd',
   ['c', 'cpp'],
   license: ['BSD', 'GPLv2'],
   default_options : [
-    'c_std=gnu99',
+    # There shouldn't be any need to force a C standard convention for zstd
+    # but in case one would want that anyway, this can be done here.
+    # 'c_std=gnu99',
+    # c++11 standard is useful for pzstd
     'cpp_std=c++11',
     'buildtype=release',
     'warning_level=3',
@@ -92,7 +95,7 @@ feature_lz4 = get_option('lz4')
 # Dependencies
 # =============================================================================
 
-libm_dep = cc.find_library('m', required: bin_tests)
+libm_dep = cc.find_library('m', required: false)
 thread_dep = dependency('threads', required: feature_multi_thread)
 use_multi_thread = thread_dep.found()
 # Arguments in dependency should be equivalent to those passed to pkg-config

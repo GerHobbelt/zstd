@@ -118,7 +118,7 @@ zstdd_%.o : $(ZSTDDIR)/decompress/%.c
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 zstdd_%.o : $(ZSTDDIR)/decompress/%.S
-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+	$(CC) -c $(CPPFLAGS) $(ASFLAGS) $< -o $@
 
 zstdmt%.o : CPPFLAGS += $(MULTITHREAD_CPP)
 
@@ -132,7 +132,7 @@ zstdmt_d_%.o : $(ZSTDDIR)/decompress/%.c
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 zstdmt_d_%.o : $(ZSTDDIR)/decompress/%.S
-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+	$(CC) -c $(CPPFLAGS) $(ASFLAGS) $< -o $@
 
 fullbench32: CPPFLAGS += -m32
 fullbench fullbench32 : CPPFLAGS += $(MULTITHREAD_CPP) -Wno-deprecated-declarations
@@ -297,7 +297,7 @@ check: shortest
 fuzztest: test-fuzzer test-zstream test-decodecorpus
 
 .PHONY: test
-test: test-zstd test-fullbench test-fuzzer test-zstream test-invalidDictionaries test-legacy test-decodecorpus
+test: test-zstd test-fullbench test-fuzzer test-zstream test-invalidDictionaries test-legacy test-decodecorpus test-cli-tests
 ifeq ($(QEMU_SYS),)
 test: test-pool
 endif
@@ -321,6 +321,12 @@ test-zstd-nolegacy: zstd-nolegacy
 test-zstd test-zstd32 test-zstd-nolegacy: datagen
 	file $(ZSTD)
 	EXE_PREFIX="$(QEMU_SYS)" ZSTD_BIN="$(ZSTD)" DATAGEN_BIN=./datagen ./playTests.sh $(ZSTDRTTEST)
+
+test-cli-tests: ZSTD = $(PRGDIR)/zstd
+test-cli-tests: zstd datagen
+	file $(ZSTD)
+	./cli-tests/run.py --exec-prefix="$(QEMU_SYS)" --zstd="$(ZSTD)" --datagen=./datagen
+
 
 test-fullbench: fullbench datagen
 	$(QEMU_SYS) ./fullbench -i1
