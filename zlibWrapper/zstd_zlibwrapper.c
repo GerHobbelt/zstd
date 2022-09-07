@@ -1110,13 +1110,13 @@ Z_EXTERN uLong Z_EXPORT z_zlibCompileFlags (void) { return zng_zlibCompileFlags(
 Z_EXTERN int Z_EXPORT z_compress (Bytef *dest,   uLongf *destLen,
                                  const Bytef *source, uLong sourceLen)
 {
-	if (!g_ZWRAP_useZSTDcompression)
-	{
-		size_t zngDestLen = 0;
-		int rv = zng_compress(dest, &zngDestLen, source, sourceLen);
-		*destLen = zngDestLen;
-		return rv;
-	}
+    if (!g_ZWRAP_useZSTDcompression)
+    {
+        size_t zngDestLen = 0;
+        int rv = zng_compress(dest, &zngDestLen, source, sourceLen);
+        *destLen = zngDestLen;
+        return rv;
+    }
 
     {   size_t dstCapacity = *destLen;
         size_t const cSize = ZSTD_compress(dest, dstCapacity,
@@ -1135,13 +1135,13 @@ Z_EXTERN int Z_EXPORT z_compress2 (Bytef *dest,   uLongf *destLen,
                                   const Bytef *source, uLong sourceLen,
                                   int level)
 {
-	if (!g_ZWRAP_useZSTDcompression)
-	{
-		size_t zngDestLen = 0;
-		int rv = zng_compress2(dest, &zngDestLen, source, sourceLen, level);
-		*destLen = zngDestLen;
-		return rv;
-	}
+    if (!g_ZWRAP_useZSTDcompression)
+    {
+        size_t zngDestLen = 0;
+        int rv = zng_compress2(dest, &zngDestLen, source, sourceLen, level);
+        *destLen = zngDestLen;
+        return rv;
+    }
 
     { size_t dstCapacity = *destLen;
       size_t const cSize = ZSTD_compress(dest, dstCapacity, source, sourceLen, level);
@@ -1164,13 +1164,13 @@ Z_EXTERN uLong Z_EXPORT z_compressBound (uLong sourceLen)
 Z_EXTERN int Z_EXPORT z_uncompress (Bytef *dest,   uLongf *destLen,
                                    const Bytef *source, uLong sourceLen)
 {
-	if (!ZSTD_isFrame(source, sourceLen))
-	{
-		size_t zngDestLen = 0;
-		int rv = zng_uncompress(dest, &zngDestLen, source, sourceLen);
-		*destLen = zngDestLen;
-		return rv;
-	}
+    if (!ZSTD_isFrame(source, sourceLen))
+    {
+        size_t zngDestLen = 0;
+        int rv = zng_uncompress(dest, &zngDestLen, source, sourceLen);
+        *destLen = zngDestLen;
+        return rv;
+    }
 
     { size_t dstCapacity = *destLen;
       size_t const dSize = ZSTD_decompress(dest, dstCapacity, source, sourceLen);
