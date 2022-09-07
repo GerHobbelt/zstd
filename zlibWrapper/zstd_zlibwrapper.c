@@ -306,7 +306,7 @@ Z_EXTERN int Z_EXPORT z_deflateInit2_ (zng_streamp strm, int level, int method,
     if (!g_ZWRAP_useZSTDcompression)
         return zng_deflateInit2_(strm, level, method, windowBits, memLevel, strategy, version, stream_size);
 
-    return z_deflateInit_ (strm, level, version, stream_size);
+    return zng_deflateInit_ (strm, level, version, stream_size);
 }
 
 
