@@ -715,6 +715,7 @@ static int benchMem(slice_collection_t dstBlocks,
         assert(csvFile);
         fprintf(csvFile, "%s\n", exeName);
     } else {
+        fclose(csvFile);
         csvFile = fopen(csvFileName, "at");
         assert(csvFile);
     }
