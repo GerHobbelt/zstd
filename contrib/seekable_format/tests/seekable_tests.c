@@ -7,6 +7,11 @@
 #include "zstd_seekable.h"
 
 /* Basic unit tests for zstd seekable format */
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_seekable_tests_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     unsigned testNb = 1;

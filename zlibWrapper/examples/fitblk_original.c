@@ -51,6 +51,8 @@
    to complete in all cases.
  */
 
+#if !defined(BUILD_MONOLITHIC)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -235,3 +237,5 @@ int main(int argc, const char** argv)
             size - have, size, def.total_in);
     return 0;
 }
+
+#endif

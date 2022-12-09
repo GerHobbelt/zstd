@@ -164,7 +164,7 @@ MEM_STATIC size_t BIT_initCStream(BIT_CStream_t* bitC,
 
 MEM_STATIC FORCE_INLINE_ATTR size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits)
 {
-#if defined(STATIC_BMI2) && STATIC_BMI2 == 1 && !defined(ZSTD_NO_INTRINSICS)
+#if defined(STATIC_BMI2) && STATIC_BMI2 == 1 && !defined(ZSTD_NO_INTRINSICS) && !defined(ZSTD_NO_BZHI_INTRINSIC)
     return  _bzhi_u64(bitContainer, nbBits);
 #else
     assert(nbBits < BIT_MASK_SIZE);

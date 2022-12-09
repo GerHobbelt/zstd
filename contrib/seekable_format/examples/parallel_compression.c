@@ -193,7 +193,13 @@ static const char* createOutFilename_orDie(const char* filename)
     return (const char*)outSpace;
 }
 
-int main(int argc, const char** argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_parallel_compression_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     const char* const exeName = argv[0];
     if (argc!=4) {
         printf("wrong arguments\n");

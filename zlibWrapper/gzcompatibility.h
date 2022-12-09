@@ -10,7 +10,7 @@
 
 
 
-#if ZLIB_VERNUM <= 0x1240
+#if defined(ZLIB_VERNUM) && (ZLIB_VERNUM <= 0x1240)
 ZEXTERN int ZEXPORT gzclose_r OF((gzFile file));
 ZEXTERN int ZEXPORT gzclose_w OF((gzFile file));
 ZEXTERN int ZEXPORT gzbuffer OF((gzFile file, unsigned size));
@@ -28,7 +28,7 @@ ZEXTERN z_off_t ZEXPORT gzoffset OF((gzFile file));
 #endif
 
 
-#if ZLIB_VERNUM <= 0x1250
+#if defined(ZLIB_VERNUM) && (ZLIB_VERNUM <= 0x1250)
 struct gzFile_s {
     unsigned have;
     unsigned char *next;
@@ -37,7 +37,7 @@ struct gzFile_s {
 #endif
 
 
-#if ZLIB_VERNUM <= 0x1270
+#if defined(ZLIB_VERNUM) && (ZLIB_VERNUM <= 0x1270)
 #if defined(_WIN32) && !defined(Z_SOLO)
 #    include <stddef.h>         /* for wchar_t */
 ZEXTERN gzFile         ZEXPORT gzopen_w OF((const wchar_t *path,
@@ -46,7 +46,7 @@ ZEXTERN gzFile         ZEXPORT gzopen_w OF((const wchar_t *path,
 #endif
 
 
-#if ZLIB_VERNUM < 0x12B0
+#if defined(ZLIB_VERNUM) && (ZLIB_VERNUM < 0x12B0)
 #ifdef Z_SOLO
    typedef unsigned long z_size_t;
 #else

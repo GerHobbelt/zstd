@@ -78,7 +78,13 @@ void print_line(stringstream &sout, string line)
 }
 
 
-int main(int argc, char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_gen_html_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     char exclam;
     int linenum, chapter = 1;
     vector<string> input, lines, comments, chapters;

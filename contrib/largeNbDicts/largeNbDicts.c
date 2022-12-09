@@ -1004,7 +1004,12 @@ int bad_usage(const char* exeName)
     return 1;
 }
 
-int main (int argc, const char** argv)
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_large_nbdicts_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
     int recursiveMode = 0;
     int benchCompression = 1;
@@ -1030,7 +1035,7 @@ int main (int argc, const char** argv)
 
     for (int argNb = 1; argNb < argc ; argNb++) {
         const char* argument = argv[argNb];
-        if (!strcmp(argument, "-h")) { free(nameTable); return usage(exeName); }
+        if (!strcmp(argument, "-h")) { free((void *)nameTable); return usage(exeName); }
         if (!strcmp(argument, "-d")) { benchCompression = 0; continue; }
         if (!strcmp(argument, "-z")) { benchCompression = 1; continue; }
         if (!strcmp(argument, "-r")) { recursiveMode = 1; continue; }
@@ -1078,7 +1083,7 @@ int main (int argc, const char** argv)
               metricAggregatePref);
 
     UTIL_freeFileNamesTable(filenameTable);
-    free(nameTable);
+    free((void *)nameTable);
     ZSTD_freeCCtxParams(cctxParams);
 
     return result;

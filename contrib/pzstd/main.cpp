@@ -12,7 +12,13 @@
 
 using namespace pzstd;
 
-int main(int argc, const char** argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_pzstd_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
   Options options;
   switch (options.parse(argc, argv)) {
   case Options::Status::Failure:

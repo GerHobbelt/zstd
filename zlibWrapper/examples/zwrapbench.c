@@ -304,7 +304,7 @@ static int BMK_benchMem(z_const void* srcBuffer, size_t srcSize,
                     } while (UTIL_clockSpanMicro(clockStart) < clockLoop);
                     ZSTD_freeCStream(zbc);
                 } else if (compressor == BMK_ZWRAP_ZLIB_REUSE || compressor == BMK_ZWRAP_ZSTD_REUSE || compressor == BMK_ZLIB_REUSE) {
-                    z_stream def;
+                    zng_stream def;
                     int ret;
                     int useSetDict = (dictBuffer != NULL);
                     if (compressor == BMK_ZLIB_REUSE || compressor == BMK_ZWRAP_ZLIB_REUSE) ZWRAP_useZSTDcompression(0);
@@ -312,7 +312,7 @@ static int BMK_benchMem(z_const void* srcBuffer, size_t srcSize,
                     def.zalloc = Z_NULL;
                     def.zfree = Z_NULL;
                     def.opaque = Z_NULL;
-                    ret = deflateInit(&def, cLevel);
+                    ret = zng_deflateInit(&def, cLevel);
                     if (ret != Z_OK) EXM_THROW(1, "deflateInit failure");
                  /*   if (ZWRAP_isUsingZSTDcompression()) {
                         ret = ZWRAP_setPledgedSrcSize(&def, avgSize);
@@ -324,29 +324,29 @@ static int BMK_benchMem(z_const void* srcBuffer, size_t srcSize,
                             if (ZWRAP_isUsingZSTDcompression())
                                 ret = ZWRAP_deflateReset_keepDict(&def); /* reuse dictionary to make compression faster */
                             else
-                                ret = deflateReset(&def);
+                                ret = zng_deflateReset(&def);
                             if (ret != Z_OK) EXM_THROW(1, "deflateReset failure");
                             if (useSetDict) {
-                                ret = deflateSetDictionary(&def, (const z_Bytef*)dictBuffer, dictBufferSize);
+                                ret = zng_deflateSetDictionary(&def, (const uint8_t*)dictBuffer, dictBufferSize);
                                 if (ret != Z_OK) EXM_THROW(1, "deflateSetDictionary failure");
                                 if (ZWRAP_isUsingZSTDcompression()) useSetDict = 0; /* zstd doesn't require deflateSetDictionary after ZWRAP_deflateReset_keepDict */
                             }
-                            def.next_in = (z_const z_Bytef*) blockTable[blockNb].srcPtr;
+                            def.next_in = (z_const uint8_t*) blockTable[blockNb].srcPtr;
                             def.avail_in = (uInt)blockTable[blockNb].srcSize;
                             def.total_in = 0;
-                            def.next_out = (z_Bytef*) blockTable[blockNb].cPtr;
+                            def.next_out = (uint8_t*) blockTable[blockNb].cPtr;
                             def.avail_out = (uInt)blockTable[blockNb].cRoom;
                             def.total_out = 0;
-                            ret = deflate(&def, Z_FINISH);
+                            ret = zng_deflate(&def, Z_FINISH);
                             if (ret != Z_STREAM_END) EXM_THROW(1, "deflate failure ret=%d srcSize=%d" , ret, (int)blockTable[blockNb].srcSize);
                             blockTable[blockNb].cSize = def.total_out;
                         }
                         nbLoops++;
                     } while (UTIL_clockSpanMicro(clockStart) < clockLoop);
-                    ret = deflateEnd(&def);
+                    ret = zng_deflateEnd(&def);
                     if (ret != Z_OK) EXM_THROW(1, "deflateEnd failure");
                 } else {
-                    z_stream def;
+                    zng_stream def;
                     if (compressor == BMK_ZLIB || compressor == BMK_ZWRAP_ZLIB) ZWRAP_useZSTDcompression(0);
                     else ZWRAP_useZSTDcompression(1);
                     do {
@@ -356,21 +356,21 @@ static int BMK_benchMem(z_const void* srcBuffer, size_t srcSize,
                             def.zalloc = Z_NULL;
                             def.zfree = Z_NULL;
                             def.opaque = Z_NULL;
-                            ret = deflateInit(&def, cLevel);
+                            ret = zng_deflateInit(&def, cLevel);
                             if (ret != Z_OK) EXM_THROW(1, "deflateInit failure");
                             if (dictBuffer) {
-                                ret = deflateSetDictionary(&def, (const z_Bytef*)dictBuffer, dictBufferSize);
+                                ret = zng_deflateSetDictionary(&def, (const uint8_t*)dictBuffer, dictBufferSize);
                                 if (ret != Z_OK) EXM_THROW(1, "deflateSetDictionary failure");
                             }
-                            def.next_in = (z_const z_Bytef*) blockTable[blockNb].srcPtr;
+                            def.next_in = (z_const uint8_t*) blockTable[blockNb].srcPtr;
                             def.avail_in = (uInt)blockTable[blockNb].srcSize;
                             def.total_in = 0;
-                            def.next_out = (z_Bytef*) blockTable[blockNb].cPtr;
+                            def.next_out = (uint8_t*) blockTable[blockNb].cPtr;
                             def.avail_out = (uInt)blockTable[blockNb].cRoom;
                             def.total_out = 0;
-                            ret = deflate(&def, Z_FINISH);
+                            ret = zng_deflate(&def, Z_FINISH);
                             if (ret != Z_STREAM_END) EXM_THROW(1, "deflate failure");
-                            ret = deflateEnd(&def);
+                            ret = zng_deflateEnd(&def);
                             if (ret != Z_OK) EXM_THROW(1, "deflateEnd failure");
                             blockTable[blockNb].cSize = def.total_out;
                         }
@@ -450,14 +450,14 @@ static int BMK_benchMem(z_const void* srcBuffer, size_t srcSize,
                     } while (UTIL_clockSpanMicro(clockStart) < clockLoop);
                     ZSTD_freeDStream(zbd);
                 } else if (compressor == BMK_ZWRAP_ZLIB_REUSE || compressor == BMK_ZWRAP_ZSTD_REUSE || compressor == BMK_ZLIB_REUSE) {
-                    z_stream inf;
+                    zng_stream inf;
                     int ret;
                     if (compressor == BMK_ZLIB_REUSE) ZWRAP_setDecompressionType(ZWRAP_FORCE_ZLIB);
                     else ZWRAP_setDecompressionType(ZWRAP_AUTO);
                     inf.zalloc = Z_NULL;
                     inf.zfree = Z_NULL;
                     inf.opaque = Z_NULL;
-                    ret = inflateInit(&inf);
+                    ret = zng_inflateInit(&inf);
                     if (ret != Z_OK) EXM_THROW(1, "inflateInit failure");
                     do {
                         U32 blockNb;
@@ -465,29 +465,29 @@ static int BMK_benchMem(z_const void* srcBuffer, size_t srcSize,
                             if (ZWRAP_isUsingZSTDdecompression(&inf))
                                 ret = ZWRAP_inflateReset_keepDict(&inf); /* reuse dictionary to make decompression faster; inflate will return Z_NEED_DICT only for the first time */
                             else
-                                ret = inflateReset(&inf);
+                                ret = zng_inflateReset(&inf);
                             if (ret != Z_OK) EXM_THROW(1, "inflateReset failure");
-                            inf.next_in = (z_const z_Bytef*) blockTable[blockNb].cPtr;
+                            inf.next_in = (z_const uint8_t*) blockTable[blockNb].cPtr;
                             inf.avail_in = (uInt)blockTable[blockNb].cSize;
                             inf.total_in = 0;
-                            inf.next_out = (z_Bytef*) blockTable[blockNb].resPtr;
+                            inf.next_out = (uint8_t*) blockTable[blockNb].resPtr;
                             inf.avail_out = (uInt)blockTable[blockNb].srcSize;
                             inf.total_out = 0;
-                            ret = inflate(&inf, Z_FINISH);
+                            ret = zng_inflate(&inf, Z_FINISH);
                             if (ret == Z_NEED_DICT) {
-                                ret = inflateSetDictionary(&inf, (const z_Bytef*)dictBuffer, dictBufferSize);
+                                ret = zng_inflateSetDictionary(&inf, (const uint8_t*)dictBuffer, dictBufferSize);
                                 if (ret != Z_OK) EXM_THROW(1, "inflateSetDictionary failure");
-                                ret = inflate(&inf, Z_FINISH);
+                                ret = zng_inflate(&inf, Z_FINISH);
                             }
                             if (ret != Z_STREAM_END) EXM_THROW(1, "inflate failure");
                             blockTable[blockNb].resSize = inf.total_out;
                         }
                         nbLoops++;
                     } while (UTIL_clockSpanMicro(clockStart) < clockLoop);
-                    ret = inflateEnd(&inf);
+                    ret = zng_inflateEnd(&inf);
                     if (ret != Z_OK) EXM_THROW(1, "inflateEnd failure");
                 } else {
-                    z_stream inf;
+                    zng_stream inf;
                     if (compressor == BMK_ZLIB) ZWRAP_setDecompressionType(ZWRAP_FORCE_ZLIB);
                     else ZWRAP_setDecompressionType(ZWRAP_AUTO);
                     do {
@@ -497,22 +497,22 @@ static int BMK_benchMem(z_const void* srcBuffer, size_t srcSize,
                             inf.zalloc = Z_NULL;
                             inf.zfree = Z_NULL;
                             inf.opaque = Z_NULL;
-                            ret = inflateInit(&inf);
+                            ret = zng_inflateInit(&inf);
                             if (ret != Z_OK) EXM_THROW(1, "inflateInit failure");
-                            inf.next_in = (z_const z_Bytef*) blockTable[blockNb].cPtr;
+                            inf.next_in = (z_const uint8_t*) blockTable[blockNb].cPtr;
                             inf.avail_in = (uInt)blockTable[blockNb].cSize;
                             inf.total_in = 0;
-                            inf.next_out = (z_Bytef*) blockTable[blockNb].resPtr;
+                            inf.next_out = (uint8_t*) blockTable[blockNb].resPtr;
                             inf.avail_out = (uInt)blockTable[blockNb].srcSize;
                             inf.total_out = 0;
-                            ret = inflate(&inf, Z_FINISH);
+                            ret = zng_inflate(&inf, Z_FINISH);
                             if (ret == Z_NEED_DICT) {
-                                ret = inflateSetDictionary(&inf, (const z_Bytef*) dictBuffer, dictBufferSize);
+                                ret = zng_inflateSetDictionary(&inf, (const uint8_t*) dictBuffer, dictBufferSize);
                                 if (ret != Z_OK) EXM_THROW(1, "inflateSetDictionary failure");
-                                ret = inflate(&inf, Z_FINISH);
+                                ret = zng_inflate(&inf, Z_FINISH);
                             }
                             if (ret != Z_STREAM_END) EXM_THROW(1, "inflate failure");
-                            ret = inflateEnd(&inf);
+                            ret = zng_inflateEnd(&inf);
                             if (ret != Z_OK) EXM_THROW(1, "inflateEnd failure");
                             blockTable[blockNb].resSize = inf.total_out;
                         }
@@ -652,7 +652,11 @@ static void BMK_benchCLevel(void* srcBuffer, size_t benchedSize,
 
     if (cLevelLast > Z_BEST_COMPRESSION) cLevelLast = Z_BEST_COMPRESSION;
 
-    DISPLAY("\n");
+#if !defined(ZLIB_VERSION) && defined(ZLIBNG_VERSION)
+#define ZLIB_VERSION ZLIBNG_VERSION
+#endif
+
+	DISPLAY("\n");
     DISPLAY("benchmarking zlib %s\n", ZLIB_VERSION);
     for (l=cLevel; l <= cLevelLast; l++) {
         BMK_benchMem(srcBuffer, benchedSize,
