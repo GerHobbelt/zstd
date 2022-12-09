@@ -1235,19 +1235,28 @@ typedef struct {
 #define SUSPECT_INCOMPRESSIBLE_SAMPLE_SIZE 4096
 #define SUSPECT_INCOMPRESSIBLE_SAMPLE_RATIO 10  /* Must be >= 2 */
 
-unsigned HUF_minTableLog(size_t srcSize, unsigned maxSymbolValue)
+unsigned HUF_cardinality(const unsigned* count, unsigned maxSymbolValue)
 {
-    U32 minBitsSrc = ZSTD_highbit32((U32)(srcSize)) + 1;
-    U32 minBitsSymbols = ZSTD_highbit32(maxSymbolValue) + 2;
-    U32 minBits = minBitsSrc < minBitsSymbols ? minBitsSrc : minBitsSymbols;
-    if (minBits < FSE_MIN_TABLELOG) minBits = FSE_MIN_TABLELOG;
-    assert(srcSize > 1); /* Not supported, RLE should be used instead */
-    return minBits;
+    unsigned cardinality = 0;
+    unsigned i;
+
+    for (i = 0; i < maxSymbolValue + 1; i++) {
+        if (count[i] != 0) cardinality += 1;
+    }
+
+    return cardinality;
+}
+
+unsigned HUF_minTableLog(unsigned symbolCardinality)
+{
+    U32 minBitsSymbols = ZSTD_highbit32(symbolCardinality) + 1;
+    return minBitsSymbols;
 }
 
 unsigned HUF_optimalTableLog(unsigned maxTableLog, size_t srcSize, unsigned maxSymbolValue, void* workSpace, size_t wkspSize, HUF_CElt* table, const unsigned* count, HUF_depth_mode depthMode)
 {
     unsigned optLog = FSE_optimalTableLog_internal(maxTableLog, srcSize, maxSymbolValue, 1);
+    assert(srcSize > 1); /* Not supported, RLE should be used instead */
 
     if (depthMode == HUF_depth_optimal) { /** Test valid depths and return optimal **/
         BYTE* dst = (BYTE*)workSpace + sizeof(HUF_WriteCTableWksp);
@@ -1255,10 +1264,11 @@ unsigned HUF_optimalTableLog(unsigned maxTableLog, size_t srcSize, unsigned maxS
         size_t optSize = ((size_t) ~0);
         unsigned huffLog;
         size_t maxBits, hSize, newSize;
+        const unsigned symbolCardinality = HUF_cardinality(count, maxSymbolValue);
 
         if (wkspSize < sizeof(HUF_buildCTable_wksp_tables)) return optLog;
 
-        for (huffLog = HUF_minTableLog(srcSize, maxSymbolValue); huffLog <= maxTableLog; huffLog++) {
+        for (huffLog = HUF_minTableLog(symbolCardinality); huffLog <= maxTableLog; huffLog++) {
             maxBits = HUF_buildCTable_wksp(table, count,
                                             maxSymbolValue, huffLog,
                                             workSpace, wkspSize);
