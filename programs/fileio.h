@@ -12,8 +12,9 @@
 #ifndef FILEIO_H_23981798732
 #define FILEIO_H_23981798732
 
-#define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_compressionParameters */
 #include "fileio_types.h"
+#include "util.h"                  /* FileNamesTable */
+#define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_compressionParameters */
 #include "../lib/zstd.h"           /* ZSTD_* */
 
 #if defined (__cplusplus)
@@ -104,6 +105,7 @@ void FIO_setPatchFromMode(FIO_prefs_t* const prefs, int value);
 void FIO_setContentSize(FIO_prefs_t* const prefs, int value);
 void FIO_displayCompressionParameters(const FIO_prefs_t* prefs);
 void FIO_setAsyncIOFlag(FIO_prefs_t* const prefs, int value);
+void FIO_setPassThroughFlag(FIO_prefs_t* const prefs, int value);
 
 /* FIO_ctx_t functions */
 void FIO_setNbFilesTotal(FIO_ctx_t* const fCtx, int value);

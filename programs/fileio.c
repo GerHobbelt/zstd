@@ -294,6 +294,7 @@ FIO_prefs_t* FIO_createPreferences(void)
     ret->excludeCompressedFiles = 0;
     ret->allowBlockDevices = 0;
     ret->asyncIO = AIO_supported();
+    ret->passThrough = -1;
     return ret;
 }
 
@@ -465,6 +466,10 @@ void FIO_setAsyncIOFlag(FIO_prefs_t* const prefs, int value) {
     (void) value;
     DISPLAYLEVEL(2, "Note : asyncio is disabled (lack of multithreading support) \n");
 #endif
+}
+
+void FIO_setPassThroughFlag(FIO_prefs_t* const prefs, int value) {
+    prefs->passThrough = (value != 0);
 }
 
 /* FIO_ctx_t functions */
@@ -2340,6 +2345,16 @@ static int FIO_decompressFrames(FIO_ctx_t* const fCtx,
 {
     unsigned readSomething = 0;
     unsigned long long filesize = 0;
+    int passThrough = prefs->passThrough;
+
+    if (passThrough == -1) {
+        /* If pass-through mode is not explicitly enabled or disabled,
+         * default to the legacy behavior of enabling it if we are writing
+         * to stdout with the overwrite flag enabled.
+         */
+        passThrough = prefs->overwrite && !strcmp(dstFileName, stdoutmark);
+    }
+    assert(passThrough == 0 || passThrough == 1);
 
     /* for each frame */
     for ( ; ; ) {
@@ -2357,7 +2372,7 @@ static int FIO_decompressFrames(FIO_ctx_t* const fCtx,
         }
         readSomething = 1;   /* there is at least 1 byte in srcFile */
         if (ress.readCtx->srcBufferLoaded < toRead) { /* not enough input to check magic number */
-            if ((prefs->overwrite) && !strcmp (dstFileName, stdoutmark)) {  /* pass-through mode */
+            if (passThrough) {
                 return FIO_passThrough(&ress);
             }
             DISPLAYLEVEL(1, "zstd: %s: unknown header \n", srcFileName);
@@ -2395,7 +2410,7 @@ static int FIO_decompressFrames(FIO_ctx_t* const fCtx,
             DISPLAYLEVEL(1, "zstd: %s: lz4 file cannot be uncompressed (zstd compiled without HAVE_LZ4) -- ignored \n", srcFileName);
             return 1;
 #endif
-        } else if ((prefs->overwrite) && !strcmp (dstFileName, stdoutmark)) {  /* pass-through mode */
+        } else if (passThrough) {
             return FIO_passThrough(&ress);
         } else {
             DISPLAYLEVEL(1, "zstd: %s: unsupported format \n", srcFileName);
