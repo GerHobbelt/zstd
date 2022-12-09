@@ -223,7 +223,7 @@ static void ABRThandler(int sig) {
 }
 #endif
 
-void FIO_addAbortHandler()
+void FIO_addAbortHandler(void)
 {
 #if BACKTRACE_ENABLE
     signal(SIGABRT, ABRThandler);
