@@ -543,7 +543,7 @@ void ZSTD_buildFSETable_body(ZSTD_seqSymbol* dt,
             for (i=0; i<n; i++) {
                 tableDecode[position].baseValue = s;
                 position = (position + step) & tableMask;
-                while (position > highThreshold) position = (position + step) & tableMask;   /* lowprob area */
+                while (UNLIKELY(position > highThreshold)) position = (position + step) & tableMask;   /* lowprob area */
         }   }
         assert(position == 0); /* position must reach all cells once, otherwise normalizedCounter is incorrect */
     }
@@ -967,6 +967,11 @@ size_t ZSTD_execSequence(BYTE* op,
 
     assert(op != NULL /* Precondition */);
     assert(oend_w < oend /* No underflow */);
+
+#if defined(__aarch64__)
+    /* prefetch sequence starting from match that will be used for copy later */
+    PREFETCH_L1(match);
+#endif
     /* Handle edge cases in a slow path:
      *   - Read beyond end of literals
      *   - Match end is within WILDCOPY_OVERLIMIT of oend
