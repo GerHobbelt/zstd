@@ -29,6 +29,9 @@ extern "C" {
     #define z_const
 #endif
 
+#if !defined(_Z_OF)
+    #define _Z_OF OF
+#endif
 
 /* returns a string with version of zstd library */
 const char * zstdVersion(void);

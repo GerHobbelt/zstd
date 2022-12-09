@@ -1800,6 +1800,11 @@ FIO_determineCompressedName(const char* srcFileName, const char* outDirName, con
     char* outDirFilename = NULL;
     size_t sfnSize = strlen(srcFileName);
     size_t const srcSuffixLen = strlen(suffix);
+
+    if(!strcmp(srcFileName, stdinmark)) {
+        return stdoutmark;
+    }
+
     if (outDirName) {
         outDirFilename = FIO_createFilename_fromOutDir(srcFileName, outDirName, srcSuffixLen);
         sfnSize = strlen(outDirFilename);
@@ -2350,7 +2355,10 @@ static int FIO_decompressFrames(FIO_ctx_t* const fCtx,
             break;   /* no more input */
         }
         readSomething = 1;   /* there is at least 1 byte in srcFile */
-        if (ress.readCtx->srcBufferLoaded < toRead) {
+        if (ress.readCtx->srcBufferLoaded < toRead) { /* not enough input to check magic number */
+            if ((prefs->overwrite) && !strcmp (dstFileName, stdoutmark)) {  /* pass-through mode */
+                return FIO_passThrough(&ress);
+            }
             DISPLAYLEVEL(1, "zstd: %s: unknown header \n", srcFileName);
             return 1;
         }
@@ -2580,6 +2588,11 @@ FIO_determineDstName(const char* srcFileName, const char* outDirName)
 
     size_t srcSuffixLen;
     const char* const srcSuffix = strrchr(srcFileName, '.');
+
+    if(!strcmp(srcFileName, stdinmark)) {
+        return stdoutmark;
+    }
+
     if (srcSuffix == NULL) {
         DISPLAYLEVEL(1,
             "zstd: %s: unknown suffix (%s expected). "
