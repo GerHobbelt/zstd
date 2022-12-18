@@ -770,7 +770,7 @@ static int benchMem(slice_collection_t dstBlocks, slice_collection_t srcBlocks,
       ZSTD_CCtxParams_getParameter(cctxParams, ZSTD_c_forceAttachDict,
                                    &dictAttachPref);
     }
-    fprintf(csvFile, "%s,%d,%ld,%d,%d,%.1f\n",
+    fprintf(csvFile, "%s,%d,%zd,%d,%d,%.1f\n",
             benchCompression ? "Compression" : "Decompression", cLevel,
             benchCompression ? ci.nbDicts : di.nbDicts, dictAttachPref,
             metricAggregatePref, speedAggregated);
