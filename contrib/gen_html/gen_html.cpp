@@ -15,7 +15,7 @@ using namespace std;
 
 
 /* trim string at the beginning and at the end */
-void trim(string& s, string characters)
+static void trim(string& s, string characters)
 {
     size_t p = s.find_first_not_of(characters);
     s.erase(0, p);
@@ -27,7 +27,7 @@ void trim(string& s, string characters)
 
 
 /* trim C++ style comments */
-void trim_comments(string &s)
+static void trim_comments(string &s)
 {
     size_t spos, epos;
 
@@ -38,7 +38,7 @@ void trim_comments(string &s)
 
 
 /* get lines until a given terminator */
-vector<string> get_lines(vector<string>& input, int& linenum, string terminator)
+static vector<string> get_lines(vector<string>& input, int& linenum, string terminator)
 {
     vector<string> out;
     string line;
@@ -62,7 +62,7 @@ vector<string> get_lines(vector<string>& input, int& linenum, string terminator)
 
 
 /* print line with ZSTDLIB_API removed and C++ comments not bold */
-void print_line(stringstream &sout, string line)
+static void print_line(stringstream &sout, string line)
 {
     size_t spos;
 

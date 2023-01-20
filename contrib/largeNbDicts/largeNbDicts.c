@@ -218,7 +218,7 @@ static void freeSliceCollection(slice_collection_t collection)
 /* shrinkSizes() :
  * downsizes sizes of slices within collection, according to `newSizes`.
  * every `newSizes` entry must be <= than its corresponding collection size */
-void shrinkSizes(slice_collection_t collection,
+static void shrinkSizes(slice_collection_t collection,
                  const size_t* newSizes)  /* presumed same size as collection */
 {
     size_t const nbSlices = collection.nbSlices;
@@ -491,7 +491,7 @@ static ddict_collection_t createDDictCollection(const void* dictBuffer, size_t d
 
 
 /* mess with addresses, so that linear scanning dictionaries != linear address scanning */
-void shuffleCDictionaries(cdict_collection_t dicts)
+static void shuffleCDictionaries(cdict_collection_t dicts)
 {
     size_t const nbDicts = dicts.nbCDict;
     for (size_t r=0; r<nbDicts; r++) {
@@ -510,7 +510,7 @@ void shuffleCDictionaries(cdict_collection_t dicts)
 }
 
 /* mess with addresses, so that linear scanning dictionaries != linear address scanning */
-void shuffleDDictionaries(ddict_collection_t dicts)
+static void shuffleDDictionaries(ddict_collection_t dicts)
 {
     size_t const nbDicts = dicts.nbDDict;
     for (size_t r=0; r<nbDicts; r++) {
@@ -577,7 +577,7 @@ typedef struct {
     cdict_collection_t dictionaries;
 } compressInstructions;
 
-compressInstructions createCompressInstructions(cdict_collection_t dictionaries, ZSTD_CCtx_params* cctxParams)
+static compressInstructions createCompressInstructions(cdict_collection_t dictionaries, ZSTD_CCtx_params* cctxParams)
 {
     compressInstructions ci;
     ci.cctx = ZSTD_createCCtx();
@@ -590,7 +590,7 @@ compressInstructions createCompressInstructions(cdict_collection_t dictionaries,
     return ci;
 }
 
-void freeCompressInstructions(compressInstructions ci)
+static void freeCompressInstructions(compressInstructions ci)
 {
     ZSTD_freeCCtx(ci.cctx);
 }
@@ -602,7 +602,7 @@ typedef struct {
     ddict_collection_t dictionaries;
 } decompressInstructions;
 
-decompressInstructions createDecompressInstructions(ddict_collection_t dictionaries)
+static decompressInstructions createDecompressInstructions(ddict_collection_t dictionaries)
 {
     decompressInstructions di;
     di.dctx = ZSTD_createDCtx();
@@ -613,13 +613,13 @@ decompressInstructions createDecompressInstructions(ddict_collection_t dictionar
     return di;
 }
 
-void freeDecompressInstructions(decompressInstructions di)
+static void freeDecompressInstructions(decompressInstructions di)
 {
     ZSTD_freeDCtx(di.dctx);
 }
 
 /* benched function */
-size_t compress(const void* src, size_t srcSize, void* dst, size_t dstCapacity, void* payload)
+static size_t compress(const void* src, size_t srcSize, void* dst, size_t dstCapacity, void* payload)
 {
     compressInstructions* const ci = (compressInstructions*) payload;
     (void)dstCapacity;
@@ -636,7 +636,7 @@ size_t compress(const void* src, size_t srcSize, void* dst, size_t dstCapacity, 
 }
 
 /* benched function */
-size_t decompress(const void* src, size_t srcSize, void* dst, size_t dstCapacity, void* payload)
+static size_t decompress(const void* src, size_t srcSize, void* dst, size_t dstCapacity, void* payload)
 {
     decompressInstructions* const di = (decompressInstructions*) payload;
 
@@ -658,7 +658,7 @@ typedef enum {
 
 /* compareFunction() :
  * Sort input in decreasing order when used with qsort() */
-int compareFunction(const void *a, const void *b)
+static int compareFunction(const void *a, const void *b)
 {
   double x = *(const double *)a;
   double y = *(const double *)b;
@@ -669,7 +669,7 @@ int compareFunction(const void *a, const void *b)
   return 0;
 }
 
-double aggregateData(double *data, size_t size,
+static double aggregateData(double *data, size_t size,
                      metricAggregatePref_e metricAggregatePref)
 {
   qsort(data, size, sizeof(*data), compareFunction);
@@ -790,7 +790,7 @@ static int benchMem(slice_collection_t dstBlocks, slice_collection_t srcBlocks,
  *  dictionary : optional (can be NULL), file to load as dictionary,
  *              if none provided : will be calculated on the fly by the program.
  * @return : 0 is success, 1+ otherwise */
-int bench(const char **fileNameTable, unsigned nbFiles, const char *dictionary,
+static int bench(const char **fileNameTable, unsigned nbFiles, const char *dictionary,
           size_t blockSize, int clevel, unsigned nbDictMax, unsigned nbBlocks,
           unsigned nbRounds, int benchCompression,
           ZSTD_dictContentType_e dictContentType, ZSTD_CCtx_params *cctxParams,
@@ -972,7 +972,7 @@ static int longCommandWArg(const char** stringPtr, const char* longCommand)
 }
 
 
-int usage(const char* exeName)
+static int usage(const char* exeName)
 {
     DISPLAY (" \n");
     DISPLAY (" %s [Options] filename(s) \n", exeName);
@@ -997,7 +997,7 @@ int usage(const char* exeName)
     return 0;
 }
 
-int bad_usage(const char* exeName)
+static int bad_usage(const char* exeName)
 {
     DISPLAY (" bad usage : \n");
     usage(exeName);
