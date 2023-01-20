@@ -104,6 +104,10 @@ if (ZSTD_BUILD_STATIC)
             target_link_libraries(libzstd_static ${THREADS_LIBS})
         endif ()
     endif ()
+    target_include_directories(libzstd_static PUBLIC ${LIBRARY_DIR})
+    if (ZSTD_LEGACY_SUPPORT)
+        target_include_directories(libzstd_static PUBLIC ${LIBRARY_LEGACY_DIR})
+    endif()
 endif ()
 
 # Add specific compile definitions for MSVC project
@@ -141,41 +145,41 @@ if (ZSTD_BUILD_STATIC)
             OUTPUT_NAME ${STATIC_LIBRARY_BASE_NAME})
 endif ()
 
-# pkg-config
-include(JoinPaths) # can be replaced by cmake_path(APPEND) in CMake 3.20
-set(PREFIX "${CMAKE_INSTALL_PREFIX}")
-set(EXEC_PREFIX "\${prefix}")
-join_paths(LIBDIR "\${exec_prefix}" "${CMAKE_INSTALL_LIBDIR}")
-join_paths(INCLUDEDIR "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
-set(LIBS_PRIVATE "${THREADS_LIBS}")
-set(VERSION "${zstd_VERSION}")
-
-configure_file("${LIBRARY_DIR}/libzstd.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/libzstd.pc" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libzstd.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-
-# install target
-install(FILES
-    "${LIBRARY_DIR}/zstd.h"
-    "${LIBRARY_DIR}/zdict.h"
-    "${LIBRARY_DIR}/zstd_errors.h"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-
-install(TARGETS ${library_targets}
-    EXPORT zstdExports
-    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    BUNDLE DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    )
-
-# uninstall target
-if (NOT TARGET uninstall)
-    configure_file(
-            "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-            "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-            IMMEDIATE @ONLY)
-
-    add_custom_target(uninstall
-            COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-endif ()
+## pkg-config
+#include(JoinPaths) # can be replaced by cmake_path(APPEND) in CMake 3.20
+#set(PREFIX "${CMAKE_INSTALL_PREFIX}")
+#set(EXEC_PREFIX "\${prefix}")
+#join_paths(LIBDIR "\${exec_prefix}" "${CMAKE_INSTALL_LIBDIR}")
+#join_paths(INCLUDEDIR "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
+#set(LIBS_PRIVATE "${THREADS_LIBS}")
+#set(VERSION "${zstd_VERSION}")
+#
+#configure_file("${LIBRARY_DIR}/libzstd.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/libzstd.pc" @ONLY)
+#install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libzstd.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+#
+## install target
+#install(FILES
+#    "${LIBRARY_DIR}/zstd.h"
+#    "${LIBRARY_DIR}/zdict.h"
+#    "${LIBRARY_DIR}/zstd_errors.h"
+#    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+#
+#install(TARGETS ${library_targets}
+#    EXPORT zstdExports
+#    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+#    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+#    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+#    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+#    BUNDLE DESTINATION "${CMAKE_INSTALL_BINDIR}"
+#    )
+#
+## uninstall target
+#if (NOT TARGET uninstall)
+#    configure_file(
+#            "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+#            "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+#            IMMEDIATE @ONLY)
+#
+#    add_custom_target(uninstall
+#            COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+#endif ()
