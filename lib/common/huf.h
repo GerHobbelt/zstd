@@ -12,16 +12,16 @@
  * You may select, at your option, one of the above-listed licenses.
 ****************************************************************** */
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 #ifndef HUF_H_298734234
 #define HUF_H_298734234
 
 /* *** Dependencies *** */
 #include "zstd_deps.h"    /* size_t */
 
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 /* *** library symbols visibility *** */
 /* Note : when linking with -fvisibility=hidden on gcc, or by default on Visual,
@@ -368,8 +368,8 @@ size_t HUF_readDTableX1_wksp_bmi2(HUF_DTable* DTable, const void* src, size_t sr
 size_t HUF_readDTableX2_wksp_bmi2(HUF_DTable* DTable, const void* src, size_t srcSize, void* workSpace, size_t wkspSize, int bmi2);
 #endif
 
-#endif /* HUF_STATIC_LINKING_ONLY */
-
 #if defined (__cplusplus)
 }
 #endif
+
+#endif /* HUF_STATIC_LINKING_ONLY */
