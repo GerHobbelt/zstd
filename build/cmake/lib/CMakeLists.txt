@@ -22,12 +22,12 @@ include_directories(${LIBRARY_DIR} ${LIBRARY_DIR}/common)
 
 file(GLOB CommonSources ${LIBRARY_DIR}/common/*.c)
 file(GLOB CompressSources ${LIBRARY_DIR}/compress/*.c)
-if (MSVC)
+#if (MSVC)
     file(GLOB DecompressSources ${LIBRARY_DIR}/decompress/*.c)
     add_compile_options(-DZSTD_DISABLE_ASM)
-else ()
-    file(GLOB DecompressSources ${LIBRARY_DIR}/decompress/*.c ${LIBRARY_DIR}/decompress/*.S)
-endif ()
+#else ()
+#    file(GLOB DecompressSources ${LIBRARY_DIR}/decompress/*.c ${LIBRARY_DIR}/decompress/*.S)
+#endif ()
 file(GLOB DictBuilderSources ${LIBRARY_DIR}/dictBuilder/*.c)
 
 set(Sources
