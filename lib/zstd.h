@@ -14,6 +14,8 @@ extern "C" {
 #ifndef ZSTD_H_235446
 #define ZSTD_H_235446
 
+#if !defined(RC_INVOKED)
+
 /* ======   Dependency   ======*/
 #include <limits.h>   /* INT_MAX */
 #include <stddef.h>   /* size_t */
@@ -59,6 +61,8 @@ extern "C" {
 #  endif
 #endif /* ZSTD_DISABLE_DEPRECATE_WARNINGS */
 
+#endif // !defined(RC_INVOKED)
+
 
 /*******************************************************************************
   Introduction
@@ -99,18 +103,24 @@ extern "C" {
 #define ZSTD_VERSION_RELEASE  3
 #define ZSTD_VERSION_NUMBER  (ZSTD_VERSION_MAJOR *100*100 + ZSTD_VERSION_MINOR *100 + ZSTD_VERSION_RELEASE)
 
-/*! ZSTD_versionNumber() :
- *  Return runtime library version, the value is (MAJOR*100*100 + MINOR*100 + RELEASE). */
-ZSTDLIB_API unsigned ZSTD_versionNumber(void);
-
 #define ZSTD_LIB_VERSION ZSTD_VERSION_MAJOR.ZSTD_VERSION_MINOR.ZSTD_VERSION_RELEASE
 #define ZSTD_QUOTE(str) #str
 #define ZSTD_EXPAND_AND_QUOTE(str) ZSTD_QUOTE(str)
 #define ZSTD_VERSION_STRING ZSTD_EXPAND_AND_QUOTE(ZSTD_LIB_VERSION)
 
+
+#if !defined(RC_INVOKED)
+
+/*! ZSTD_versionNumber() :
+ *  Return runtime library version, the value is (MAJOR*100*100 + MINOR*100 + RELEASE). */
+ZSTDLIB_API unsigned ZSTD_versionNumber(void);
+
 /*! ZSTD_versionString() :
  *  Return runtime library version, like "1.4.5". Requires v1.3.0+. */
 ZSTDLIB_API const char* ZSTD_versionString(void);
+
+#endif // !defined(RC_INVOKED)
+
 
 /* *************************************
  *  Default constant
@@ -132,6 +142,8 @@ ZSTDLIB_API const char* ZSTD_versionString(void);
 #define ZSTD_BLOCKSIZELOG_MAX  17
 #define ZSTD_BLOCKSIZE_MAX     (1<<ZSTD_BLOCKSIZELOG_MAX)
 
+
+#if !defined(RC_INVOKED)
 
 /***************************************
 *  Simple API
@@ -1104,8 +1116,12 @@ ZSTDLIB_API size_t ZSTD_sizeof_DStream(const ZSTD_DStream* zds);
 ZSTDLIB_API size_t ZSTD_sizeof_CDict(const ZSTD_CDict* cdict);
 ZSTDLIB_API size_t ZSTD_sizeof_DDict(const ZSTD_DDict* ddict);
 
+#endif // !defined(RC_INVOKED)
+
 #endif  /* ZSTD_H_235446 */
 
+
+#if !defined(RC_INVOKED)
 
 /* **************************************************************************************
  *   ADVANCED AND EXPERIMENTAL FUNCTIONS
@@ -2641,6 +2657,8 @@ ZSTDLIB_STATIC_API size_t ZSTD_insertBlock    (ZSTD_DCtx* dctx, const void* bloc
 
 
 #endif   /* ZSTD_H_ZSTD_STATIC_LINKING_ONLY */
+
+#endif // !defined(RC_INVOKED)
 
 #if defined (__cplusplus)
 }

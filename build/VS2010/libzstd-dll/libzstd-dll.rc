@@ -1,9 +1,14 @@
 // Microsoft Visual C++ generated resource script.
 //
 
-#include "zstd.h" /* ZSTD_VERSION_STRING */
+//#define WIN32_LEAN_AND_MEAN
+#define APSTUDIO_READONLY_SYMBOLS
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include <windows.h>
+#include <winver.h>
 
-#include <verrsrc.h>
+
+#include "zstd.h" /* ZSTD_VERSION_STRING */
 
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
