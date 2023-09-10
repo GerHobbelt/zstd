@@ -25,7 +25,8 @@
 #include <stdlib.h>       /* free */
 #include <stdio.h>        /* fgets, sscanf */
 #include <string.h>       /* strcmp */
-#undef NDEBUG
+#include <time.h>         /* time(), time_t */
+#undef NDEBUG             /* always enable assert() */
 #include <assert.h>
 #define ZSTD_STATIC_LINKING_ONLY  /* ZSTD_compressContinue, ZSTD_compressBlock */
 #include "debug.h"        /* DEBUG_STATIC_ASSERT */
@@ -476,7 +477,7 @@ static void test_compressBound(unsigned tnb)
             CHECK_EQ(ZSTD_compressBound(w), ZSTD_COMPRESSBOUND(w));
     }   }
 
-    // Ensure error if srcSize too big
+    /* Ensure error if srcSize too big */
     {   size_t const w = ZSTD_MAX_INPUT_SIZE + 1;
         CHECK(ZSTD_isError(ZSTD_compressBound(w))); /* must fail */
         CHECK_EQ(ZSTD_COMPRESSBOUND(w), 0);
@@ -489,7 +490,7 @@ static void test_decompressBound(unsigned tnb)
 {
     DISPLAYLEVEL(3, "test%3u : decompressBound : ", tnb);
 
-    // Simple compression, with size : should provide size;
+    /* Simple compression, with size : should provide size; */
     {   const char example[] = "abcd";
         char cBuffer[ZSTD_COMPRESSBOUND(sizeof(example))];
         size_t const cSize = ZSTD_compress(cBuffer, sizeof(cBuffer), example, sizeof(example), 0);
@@ -497,7 +498,7 @@ static void test_decompressBound(unsigned tnb)
         CHECK_EQ(ZSTD_decompressBound(cBuffer, cSize), (unsigned long long)sizeof(example));
     }
 
-    // Simple small compression without size : should provide 1 block size
+    /* Simple small compression without size : should provide 1 block size */
     {   char cBuffer[ZSTD_COMPRESSBOUND(0)];
         ZSTD_outBuffer out = { cBuffer, sizeof(cBuffer), 0 };
         ZSTD_inBuffer in = { NULL, 0, 0 };
@@ -510,14 +511,14 @@ static void test_decompressBound(unsigned tnb)
         ZSTD_freeCCtx(cctx);
     }
 
-    // Attempt to overflow 32-bit intermediate multiplication result
-    // This requires dBound >= 4 GB, aka 2^32.
-    // This requires 2^32 / 2^17 = 2^15 blocks
-    // => create 2^15 blocks (can be empty, or just 1 byte).
+    /* Attempt to overflow 32-bit intermediate multiplication result
+     * This requires dBound >= 4 GB, aka 2^32.
+     * This requires 2^32 / 2^17 = 2^15 blocks
+     * => create 2^15 blocks (can be empty, or just 1 byte). */
     {   const char input[] = "a";
         size_t const nbBlocks = (1 << 15) + 1;
         size_t blockNb;
-        size_t const outCapacity = 1 << 18; // large margin
+        size_t const outCapacity = 1 << 18; /* large margin */
         char* const outBuffer = malloc (outCapacity);
         ZSTD_outBuffer out = { outBuffer, outCapacity, 0 };
         ZSTD_CCtx* const cctx = ZSTD_createCCtx();
@@ -1217,6 +1218,60 @@ static int basicUnitTests(U32 const seed, double compressibility)
         free(dict);
         free(src);
         free(dst);
+    }
+    DISPLAYLEVEL(3, "OK \n");
+
+    DISPLAYLEVEL(3, "test%3i : in-place decompression : ", testNb++);
+    cSize = ZSTD_compress(compressedBuffer, compressedBufferSize, CNBuffer, CNBuffSize, -ZSTD_BLOCKSIZE_MAX);
+    CHECK_Z(cSize);
+    CHECK_LT(CNBuffSize, cSize);
+    {
+        size_t const margin = ZSTD_decompressionMargin(compressedBuffer, cSize);
+        size_t const outputSize = (CNBuffSize + margin);
+        char* output = malloc(outputSize);
+        char* input = output + outputSize - cSize;
+        CHECK_LT(cSize, CNBuffSize + margin);
+        CHECK(output != NULL);
+        CHECK_Z(margin);
+        CHECK(margin <= ZSTD_DECOMPRESSION_MARGIN(CNBuffSize, ZSTD_BLOCKSIZE_MAX));
+        memcpy(input, compressedBuffer, cSize);
+
+        {
+            size_t const dSize = ZSTD_decompress(output, outputSize, input, cSize);
+            CHECK_Z(dSize);
+            CHECK_EQ(dSize, CNBuffSize);
+        }
+        CHECK(!memcmp(output, CNBuffer, CNBuffSize));
+        free(output);
+    }
+    DISPLAYLEVEL(3, "OK \n");
+
+    DISPLAYLEVEL(3, "test%3i : in-place decompression with 2 frames : ", testNb++);
+    cSize = ZSTD_compress(compressedBuffer, compressedBufferSize, CNBuffer, CNBuffSize / 3, -ZSTD_BLOCKSIZE_MAX);
+    CHECK_Z(cSize);
+    {
+        size_t const cSize2 = ZSTD_compress((char*)compressedBuffer + cSize, compressedBufferSize - cSize, (char const*)CNBuffer + (CNBuffSize / 3), CNBuffSize / 3, -ZSTD_BLOCKSIZE_MAX);
+        CHECK_Z(cSize2);
+        cSize += cSize2;
+    }
+    {
+        size_t const srcSize = (CNBuffSize / 3) * 2;
+        size_t const margin = ZSTD_decompressionMargin(compressedBuffer, cSize);
+        size_t const outputSize = (CNBuffSize + margin);
+        char* output = malloc(outputSize);
+        char* input = output + outputSize - cSize;
+        CHECK_LT(cSize, CNBuffSize + margin);
+        CHECK(output != NULL);
+        CHECK_Z(margin);
+        memcpy(input, compressedBuffer, cSize);
+
+        {
+            size_t const dSize = ZSTD_decompress(output, outputSize, input, cSize);
+            CHECK_Z(dSize);
+            CHECK_EQ(dSize, srcSize);
+        }
+        CHECK(!memcmp(output, CNBuffer, srcSize));
+        free(output);
     }
     DISPLAYLEVEL(3, "OK \n");
 
@@ -3481,7 +3536,7 @@ static int basicUnitTests(U32 const seed, double compressibility)
 
     DISPLAYLEVEL(3, "test%3i : testing bitwise intrinsics PR#3045: ", testNb++);
     {
-        U32 seed_copy = seed; // need non-const seed to avoid compiler warning for FUZ_rand(&seed)
+        U32 seed_copy = seed; /* need non-const seed to avoid compiler warning for FUZ_rand(&seed) */
         U32 rand32 = FUZ_rand(&seed_copy);
         U64 rand64 = ((U64)FUZ_rand(&seed_copy) << 32) | FUZ_rand(&seed_copy);
         U32 lowbit_only_32 = 1;
@@ -3489,8 +3544,8 @@ static int basicUnitTests(U32 const seed, double compressibility)
         U32 highbit_only_32 = (U32)1 << 31;
         U64 highbit_only_64 = (U64)1 << 63;
         U32 i;
-        if (rand32 == 0) rand32 = 1; // CLZ and CTZ are undefined on 0
-        if (rand64 == 0) rand64 = 1; // CLZ and CTZ are undefined on 0
+        if (rand32 == 0) rand32 = 1; /* CLZ and CTZ are undefined on 0 */
+        if (rand64 == 0) rand64 = 1; /* CLZ and CTZ are undefined on 0 */
 
         /* Test ZSTD_countTrailingZeros32 */
         CHECK_EQ(ZSTD_countTrailingZeros32(lowbit_only_32), 0u);
