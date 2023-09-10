@@ -206,19 +206,22 @@
 #ifndef STATIC_BMI2
 #  if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
 #    ifdef __AVX2__  //MSVC does not have a BMI2 specific flag, but every CPU that supports AVX2 also supports BMI2
-#       include <immintrin.h>
-#       define STATIC_BMI2 1
-#if !defined(_WIN64)
-#       define ZSTD_NO_BZHI_INTRINSIC 1      // bzhi is only supported in 64bit builds.
-#endif
+#      include <immintrin.h>
+#      define STATIC_BMI2 1
+#      if !defined(_WIN64)
+#         define ZSTD_NO_BZHI_INTRINSIC 1      // bzhi is only supported in 64bit builds.
+#      endif
 #    endif
-#  elif defined(__BMI2__) && defined(__x86_64__) && defined(__GNUC__)
-#    define STATIC_BMI2 1
+#  elif defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
+#    ifdef __BMI2__
+#      define STATIC_BMI2 1
+#    endif
 #  endif
 #endif
 
-#ifndef STATIC_BMI2
-    #define STATIC_BMI2 0
+#if !defined(STATIC_BMI2) || defined(ZSTD_NO_INTRINSICS)
+#  undef  STATIC_BMI2
+#  define STATIC_BMI2 0
 #endif
 
 /* compile time determination of SIMD support */
