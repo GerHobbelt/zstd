@@ -2139,6 +2139,40 @@ static int basicUnitTests(U32 seed, double compressibility, int bigTests)
 
         ZSTD_CCtx_reset(cctx, ZSTD_reset_session_and_parameters);
 
+
+        /* Test with no block delim */
+        {
+            size_t srcSize = 4;
+            void* const src = CNBuffer;
+            size_t dstSize = ZSTD_compressBound(srcSize);
+            void* const dst = compressedBuffer;
+            size_t const kNbSequences = 1;
+            ZSTD_Sequence* sequences = malloc(sizeof(ZSTD_Sequence) * kNbSequences);
+            void* const checkBuf = malloc(srcSize);
+
+            memset(src, 'x', srcSize);
+
+            sequences[0] = (ZSTD_Sequence) {1, 1, 3, 0};
+
+            /* Test with sequence validation */
+            CHECK_Z(ZSTD_CCtx_setParameter(cctx, ZSTD_c_minMatch, 3));
+            CHECK_Z(ZSTD_CCtx_setParameter(cctx, ZSTD_c_blockDelimiters, ZSTD_sf_noBlockDelimiters));
+            CHECK_Z(ZSTD_CCtx_setParameter(cctx, ZSTD_c_validateSequences, 1));
+
+            cSize = ZSTD_compressSequences(cctx, dst, dstSize,
+                                   sequences, kNbSequences,
+                                   src, srcSize);
+
+            CHECK(ZSTD_isError(cSize), "Should not throw an error");
+            CHECK_Z(ZSTD_decompress(checkBuf, srcSize, dst, cSize));
+            CHECK(memcmp(src, checkBuf, srcSize) != 0, "Corruption!");
+
+            free(sequences);
+            free(checkBuf);
+        }
+
+        ZSTD_CCtx_reset(cctx, ZSTD_reset_session_and_parameters);
+
         { /* Test case with two additional sequences */
             size_t srcSize = 19;
             void* const src = CNBuffer;
@@ -2855,6 +2889,9 @@ static int fuzzerTests_newAPI(U32 seed, int nbTests, int startTest,
         CHECK(badParameters(zc, savedParams), "CCtx params are wrong");
 
         /* multi - fragments decompression test */
+        if (FUZ_rand(&lseed) & 1) {
+            CHECK_Z(ZSTD_DCtx_reset(zd, ZSTD_reset_session_and_parameters));
+        }
         if (!dictSize /* don't reset if dictionary : could be different */ && (FUZ_rand(&lseed) & 1)) {
             DISPLAYLEVEL(5, "resetting DCtx (dict:%p) \n", (void const*)dict);
             CHECK_Z( ZSTD_resetDStream(zd) );
@@ -2862,6 +2899,9 @@ static int fuzzerTests_newAPI(U32 seed, int nbTests, int startTest,
             if (dictSize)
                 DISPLAYLEVEL(5, "using dictionary of size %zu \n", dictSize);
             CHECK_Z( ZSTD_initDStream_usingDict(zd, dict, dictSize) );
+        }
+        if (FUZ_rand(&lseed) & 1) {
+            CHECK_Z(ZSTD_DCtx_setParameter(zd, ZSTD_d_disableHuffmanAssembly, FUZ_rand(&lseed) & 1));
         }
         {   size_t decompressionResult = 1;
             ZSTD_inBuffer  inBuff = { cBuffer, cSize, 0 };
@@ -2904,7 +2944,14 @@ static int fuzzerTests_newAPI(U32 seed, int nbTests, int startTest,
         }   }
 
         /* try decompression on noisy data */
-        CHECK_Z( ZSTD_initDStream(zd_noise) );   /* note : no dictionary */
+        if (FUZ_rand(&lseed) & 1) {
+            CHECK_Z(ZSTD_DCtx_reset(zd_noise, ZSTD_reset_session_and_parameters));
+        } else {
+            CHECK_Z(ZSTD_DCtx_reset(zd_noise, ZSTD_reset_session_only));
+        }
+        if (FUZ_rand(&lseed) & 1) {
+            CHECK_Z(ZSTD_DCtx_setParameter(zd_noise, ZSTD_d_disableHuffmanAssembly, FUZ_rand(&lseed) & 1));
+        }
         {   ZSTD_inBuffer  inBuff = { cBuffer, cSize, 0 };
             ZSTD_outBuffer outBuff= { dstBuffer, dstBufferSize, 0 };
             while (outBuff.pos < dstBufferSize) {
