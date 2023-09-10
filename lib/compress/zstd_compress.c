@@ -3344,7 +3344,6 @@ static size_t ZSTD_buildSeqStore(ZSTD_CCtx* zc, const void* src, size_t srcSize)
                         "External sequence producer returned error code %lu. Falling back to internal parser.",
                         (unsigned long)nbExternalSeqs
                     );
-                    RETURN_ERROR_IF(blockCompressor == NULL, parameter_combination_unsupported, "Got NULL block compressor!");
                     lastLLSize = blockCompressor(ms, &zc->seqStore, zc->blockState.nextCBlock->rep, src, srcSize);
             }   }
         } else {   /* not long range mode and no external matchfinder */
@@ -3353,7 +3352,6 @@ static size_t ZSTD_buildSeqStore(ZSTD_CCtx* zc, const void* src, size_t srcSize)
                     zc->appliedParams.useRowMatchFinder,
                     dictMode);
             ms->ldmSeqStore = NULL;
-            RETURN_ERROR_IF(blockCompressor == NULL, parameter_combination_unsupported, "Got NULL block compressor!");
             lastLLSize = blockCompressor(ms, &zc->seqStore, zc->blockState.nextCBlock->rep, src, srcSize);
         }
         {   const BYTE* const lastLiterals = (const BYTE*)src + srcSize - lastLLSize;
@@ -4820,6 +4818,8 @@ static size_t ZSTD_loadDictionaryContent(ZSTD_matchState_t* ms,
     case ZSTD_dfast:
 #ifndef ZSTD_EXCLUDE_DFAST_BLOCK_COMPRESSOR
         ZSTD_fillDoubleHashTable(ms, iend, dtlm, tfp);
+#else
+        assert(0); /* shouldn't be called: cparams should've been adjusted. */
 #endif
         break;
 
@@ -4845,6 +4845,8 @@ static size_t ZSTD_loadDictionaryContent(ZSTD_matchState_t* ms,
                 DEBUGLOG(4, "Using chain-based hash table for lazy dict");
             }
         }
+#else
+        assert(0); /* shouldn't be called: cparams should've been adjusted. */
 #endif
         break;
 
@@ -4857,6 +4859,8 @@ static size_t ZSTD_loadDictionaryContent(ZSTD_matchState_t* ms,
  || !defined(ZSTD_EXCLUDE_BTULTRA_BLOCK_COMPRESSOR)
         assert(srcSize >= HASH_READ_SIZE);
         ZSTD_updateTree(ms, iend-HASH_READ_SIZE, iend);
+#else
+        assert(0); /* shouldn't be called: cparams should've been adjusted. */
 #endif
         break;
 
