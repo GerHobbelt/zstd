@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     ZSTD_CCtx_setParameter(zc, ZSTD_c_blockDelimiters, ZSTD_sf_explicitBlockDelimiters);
     size_t outBufSize = ZSTD_compressSequences(zc, outBuf, inBufSize, seqs, seqsSize, inBuf, inBufSize);
     if (ZSTD_isError(outBufSize)) {
-        printf("ERROR: %lu\n", outBufSize);
+        printf("ERROR: %zu\n", outBufSize);
         return 1;
     }
 
