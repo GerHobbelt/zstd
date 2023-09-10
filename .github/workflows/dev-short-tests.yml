@@ -236,6 +236,20 @@ jobs:
 #        msbuild "build\VS2010\zstd.sln" /m /verbosity:minimal /property:PlatformToolset=v140
 #        /t:Clean,Build /p:Platform=${{matrix.platform}} /p:Configuration=${{matrix.configuration}}
 
+  # This tests that we don't accidently grow the size too much.
+  # If the size grows intentionally, you can raise these numbers.
+  # But we do need to think about binary size, since it is a concern.
+  libzstd-size:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: libzstd size test
+      run: |
+        make clean && make -j -C lib libzstd && ./tests/check_size.py lib/libzstd.so 1100000
+        make clean && make -j -C lib libzstd ZSTD_LIB_COMPRESSION=0 ZSTD_LIB_DICTBUILDER=0 && ./tests/check_size.py lib/libzstd.so 400000
+        make clean && make -j -C lib libzstd ZSTD_LIB_MINIFY=1 && ./tests/check_size.py lib/libzstd.so 300000
+        make clean && make -j -C lib libzstd ZSTD_LIB_MINIFY=1 ZSTD_LIB_COMPRESSION=0 ZSTD_LIB_DICTBUILDER=0 && ./tests/check_size.py lib/libzstd.so 80000
+
   minimal-decompressor-macros:
     runs-on: ubuntu-latest
     steps:
@@ -431,18 +445,13 @@ jobs:
           cc -Wall -Wextra -Wpedantic -Werror -o simple examples/simple_compression.c $(pkg-config --cflags --libs libzstd)
           ./simple LICENSE
 
-
-# This test currently fails on Github Actions specifically.
-# Possible reason : TTY emulation.
-# Note that the same test works fine locally and on travisCI.
-# This will have to be fixed before transferring the test to GA.
-#  versions-compatibility:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v3
-#    - name: Versions Compatibility Test
-#      run: |
-#        make -C tests versionsTest
+  versions-compatibility:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Versions Compatibility Test
+      run: |
+        make -C tests versionsTest
 
 
 # For reference : icc tests
