@@ -86,8 +86,8 @@ int main(int argc, char *argv[]) {
 
     if (memcmp(src, val, srcSize) == 0) {
         printf("Compression and decompression were successful!\n");
-        printf("Original size: %lu\n", srcSize);
-        printf("Compressed size: %lu\n", cSize);
+        printf("Original size: %zu\n", srcSize);
+        printf("Compressed size: %zu\n", cSize);
     } else {
         printf("ERROR: input and validation buffers don't match!\n");
         for (size_t i = 0; i < srcSize; i++) {
