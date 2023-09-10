@@ -17,7 +17,7 @@
 #include <zstd.h>      // presumes zstd library is installed
 #include <zstd_errors.h>
 
-#include "zstd_seekable.h"
+#include "../zstd_seekable.h"
 
 #if !defined(_OFF_T_DEFINED) && defined(_MSC_VER)
 typedef _off_t off_t;

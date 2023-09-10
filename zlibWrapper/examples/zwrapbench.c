@@ -26,7 +26,7 @@
 #include "datagen.h"     /* RDG_genBuffer */
 #include "xxhash.h"
 
-#include "zstd_zlibwrapper.h"
+#include "../zstd_zlibwrapper.h"
 
 #include "../programs/monolithic_examples.h"
 
@@ -803,7 +803,7 @@ static void BMK_syntheticTest(int cLevel, int cLevelLast, double compressibility
 }
 
 
-int BMK_benchFiles(const char** fileNamesTable, unsigned nbFiles,
+static int BMK_benchFiles(const char** fileNamesTable, unsigned nbFiles,
                    const char* dictFileName, int cLevel, int cLevelLast)
 {
     double const compressibility = (double)g_compressibilityDefault / 100;
