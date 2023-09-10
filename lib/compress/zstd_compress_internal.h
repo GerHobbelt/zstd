@@ -355,6 +355,9 @@ struct ZSTD_CCtx_params_s {
      * Users can't set this externally.
      * It is set internally in ZSTD_registerExternalMatchFinder(). */
     int useExternalMatchFinder;
+
+    /* Adjust the max block size*/
+    size_t maxBlockSize;
 };  /* typedef'd to ZSTD_CCtx_params within "zstd.h" */
 
 #define COMPRESS_SEQUENCES_WORKSPACE_SIZE (sizeof(unsigned) * (MaxSeq + 2))
@@ -491,7 +494,7 @@ typedef enum {
                                  * In this mode we take both the source size and the dictionary size
                                  * into account when selecting and adjusting the parameters.
                                  */
-    ZSTD_cpm_unknown = 3,       /* ZSTD_getCParams, ZSTD_getParams, ZSTD_adjustParams.
+    ZSTD_cpm_unknown = 3        /* ZSTD_getCParams, ZSTD_getParams, ZSTD_adjustParams.
                                  * We don't know what these parameters are for. We default to the legacy
                                  * behavior of taking both the source size and the dict size into account
                                  * when selecting and adjusting parameters.
