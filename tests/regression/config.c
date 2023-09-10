@@ -354,7 +354,7 @@ ZSTD_parameters config_get_zstd_params(
     uint64_t srcSize,
     size_t dictSize)
 {
-    ZSTD_parameters zparams = {};
+    ZSTD_parameters zparams = { {0} };
     param_values_t const params = config->param_values;
     int level = config_get_level(config);
     if (level == CONFIG_NO_LEVEL)
