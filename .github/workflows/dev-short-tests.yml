@@ -10,6 +10,8 @@ on:
   pull_request:
     branches: [ dev, release, actionsTest ]
 
+permissions: read-all
+
 jobs:
   linux-kernel:
     runs-on: ubuntu-latest
@@ -55,6 +57,14 @@ jobs:
       run: |
         make c89build V=1
 
+  build-zstd-dll:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # tag=v3
+    - name: build zstd bin against a dynamic lib (debuglevel for more dependencies)
+      run: |
+        make -C lib lib-mt-release 
+        DEBUGLEVEL=2 make -C programs zstd-dll
 
   gcc-7-libzstd:
     runs-on: ubuntu-latest
@@ -175,6 +185,25 @@ jobs:
           sudo apt-get -qqq update
           make gcc8install
           CC=gcc-8 CFLAGS="-Werror" make -j all
+
+  make-external-compressors:
+    strategy:
+      matrix:
+        include:
+          - name: "no external compressors"
+            flags: "HAVE_ZLIB=0 HAVE_LZ4=0 HAVE_LZMA=0"
+          - name: "only zlib"
+            flags: "HAVE_ZLIB=1 HAVE_LZ4=0 HAVE_LZMA=0"
+          - name: "only lz4"
+            flags: "HAVE_ZLIB=0 HAVE_LZ4=1 HAVE_LZMA=0"
+          - name: "only lzma"
+            flags: "HAVE_ZLIB=0 HAVE_LZ4=0 HAVE_LZMA=1"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # tag=v3
+      - name: Build with ${{matrix.name}}
+        run: ${{matrix.flags}} make zstd
+
 
   implicit-fall-through:
     runs-on: ubuntu-latest
@@ -338,7 +367,6 @@ jobs:
       run: |
         make -j -C programs allVariants MOREFLAGS=-O0
         ./tests/test-variants.sh
-
 
   qemu-consistency:
     name: QEMU ${{ matrix.name }}
