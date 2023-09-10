@@ -25,6 +25,12 @@ Enabling multithreading requires 2 conditions :
 - set build macro `ZSTD_MULTITHREAD` (`-DZSTD_MULTITHREAD` for `gcc`)
 - for POSIX systems : compile with pthread (`-pthread` compilation flag for `gcc`)
 
+To enable multithreading support on Windows XP, there is an additional condition: set build macro
+`ZSTD_MULTITHREAD_WINXP_SUPPORT` (`-DZSTD_MULTITHREAD_WINXP_SUPPORT` for `gcc`). This makes possible
+enabling multithreading support compatible with Windows XP through winpthreads (POSIX WinThreads for
+Windows) library. As this feature introduces a dependency on the winpthreads library, the 2nd.
+condition (compilation with pthread) applies here too
+
 For convenience, we provide a build target to generate multi and single threaded libraries:
 - Force enable multithreading on both dynamic and static libraries by appending `-mt` to the target, e.g. `make lib-mt`.
 - Force disable multithreading on both dynamic and static libraries by appending `-nomt` to the target, e.g. `make lib-nomt`.
