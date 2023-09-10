@@ -1467,6 +1467,50 @@ ZSTD_adjustCParams_internal(ZSTD_compressionParameters cPar,
     const U64 maxWindowResize = 1ULL << (ZSTD_WINDOWLOG_MAX-1);
     assert(ZSTD_checkCParams(cPar)==0);
 
+    /* Cascade the selected strategy down to the next-highest one built into
+     * this binary. */
+#ifdef ZSTD_EXCLUDE_BTULTRA2_BLOCK_COMPRESSOR
+    if (cPar.strategy == ZSTD_btultra2) {
+        cPar.strategy = ZSTD_btultra;
+    }
+#endif
+#ifdef ZSTD_EXCLUDE_BTULTRA_BLOCK_COMPRESSOR
+    if (cPar.strategy == ZSTD_btultra) {
+        cPar.strategy = ZSTD_btopt;
+    }
+#endif
+#ifdef ZSTD_EXCLUDE_BTOPT_BLOCK_COMPRESSOR
+    if (cPar.strategy == ZSTD_btopt) {
+        cPar.strategy = ZSTD_btlazy2;
+    }
+#endif
+#ifdef ZSTD_EXCLUDE_BTLAZY2_BLOCK_COMPRESSOR
+    if (cPar.strategy == ZSTD_btlazy2) {
+        cPar.strategy = ZSTD_lazy2;
+    }
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR
+    if (cPar.strategy == ZSTD_lazy2) {
+        cPar.strategy = ZSTD_lazy;
+    }
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR
+    if (cPar.strategy == ZSTD_lazy) {
+        cPar.strategy = ZSTD_greedy;
+    }
+#endif
+#ifdef ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR
+    if (cPar.strategy == ZSTD_greedy) {
+        cPar.strategy = ZSTD_dfast;
+    }
+#endif
+#ifdef ZSTD_EXCLUDE_DFAST_BLOCK_COMPRESSOR
+    if (cPar.strategy == ZSTD_dfast) {
+        cPar.strategy = ZSTD_fast;
+        cPar.targetLength = 0;
+    }
+#endif
+
     switch (mode) {
     case ZSTD_cpm_unknown:
     case ZSTD_cpm_noAttachDict:
@@ -2992,40 +3036,145 @@ ZSTD_blockCompressor ZSTD_selectBlockCompressor(ZSTD_strategy strat, ZSTD_paramS
     static const ZSTD_blockCompressor blockCompressor[4][ZSTD_STRATEGY_MAX+1] = {
         { ZSTD_compressBlock_fast  /* default for 0 */,
           ZSTD_compressBlock_fast,
+#ifdef ZSTD_EXCLUDE_DFAST_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_doubleFast,
+#endif
+#ifdef ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_greedy,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_lazy,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_lazy2,
+#endif
+#ifdef ZSTD_EXCLUDE_BTLAZY2_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_btlazy2,
+#endif
+#ifdef ZSTD_EXCLUDE_BTOPT_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_btopt,
+#endif
+#ifdef ZSTD_EXCLUDE_BTULTRA_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_btultra,
-          ZSTD_compressBlock_btultra2 },
+#endif
+#ifdef ZSTD_EXCLUDE_BTULTRA2_BLOCK_COMPRESSOR
+          NULL
+#else
+          ZSTD_compressBlock_btultra2
+#endif
+        },
         { ZSTD_compressBlock_fast_extDict  /* default for 0 */,
           ZSTD_compressBlock_fast_extDict,
+#ifdef ZSTD_EXCLUDE_DFAST_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_doubleFast_extDict,
+#endif
+#ifdef ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_greedy_extDict,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_lazy_extDict,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_lazy2_extDict,
+#endif
+#ifdef ZSTD_EXCLUDE_BTLAZY2_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_btlazy2_extDict,
+#endif
+#ifdef ZSTD_EXCLUDE_BTOPT_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_btopt_extDict,
+#endif
+#ifdef ZSTD_EXCLUDE_BTULTRA_BLOCK_COMPRESSOR
+          NULL,
+          NULL
+#else
           ZSTD_compressBlock_btultra_extDict,
-          ZSTD_compressBlock_btultra_extDict },
+          ZSTD_compressBlock_btultra_extDict
+#endif
+        },
         { ZSTD_compressBlock_fast_dictMatchState  /* default for 0 */,
           ZSTD_compressBlock_fast_dictMatchState,
+#ifdef ZSTD_EXCLUDE_DFAST_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_doubleFast_dictMatchState,
+#endif
+#ifdef ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_greedy_dictMatchState,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_lazy_dictMatchState,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_lazy2_dictMatchState,
+#endif
+#ifdef ZSTD_EXCLUDE_BTLAZY2_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_btlazy2_dictMatchState,
+#endif
+#ifdef ZSTD_EXCLUDE_BTOPT_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_btopt_dictMatchState,
+#endif
+#ifdef ZSTD_EXCLUDE_BTULTRA_BLOCK_COMPRESSOR
+          NULL,
+          NULL
+#else
           ZSTD_compressBlock_btultra_dictMatchState,
-          ZSTD_compressBlock_btultra_dictMatchState },
+          ZSTD_compressBlock_btultra_dictMatchState
+#endif
+        },
         { NULL  /* default for 0 */,
           NULL,
           NULL,
+#ifdef ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_greedy_dedicatedDictSearch,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_lazy_dedicatedDictSearch,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR
+          NULL,
+#else
           ZSTD_compressBlock_lazy2_dedicatedDictSearch,
+#endif
           NULL,
           NULL,
           NULL,
@@ -3038,18 +3187,74 @@ ZSTD_blockCompressor ZSTD_selectBlockCompressor(ZSTD_strategy strat, ZSTD_paramS
     DEBUGLOG(4, "Selected block compressor: dictMode=%d strat=%d rowMatchfinder=%d", (int)dictMode, (int)strat, (int)useRowMatchFinder);
     if (ZSTD_rowMatchFinderUsed(strat, useRowMatchFinder)) {
         static const ZSTD_blockCompressor rowBasedBlockCompressors[4][3] = {
-            { ZSTD_compressBlock_greedy_row,
-            ZSTD_compressBlock_lazy_row,
-            ZSTD_compressBlock_lazy2_row },
-            { ZSTD_compressBlock_greedy_extDict_row,
-            ZSTD_compressBlock_lazy_extDict_row,
-            ZSTD_compressBlock_lazy2_extDict_row },
-            { ZSTD_compressBlock_greedy_dictMatchState_row,
-            ZSTD_compressBlock_lazy_dictMatchState_row,
-            ZSTD_compressBlock_lazy2_dictMatchState_row },
-            { ZSTD_compressBlock_greedy_dedicatedDictSearch_row,
-            ZSTD_compressBlock_lazy_dedicatedDictSearch_row,
-            ZSTD_compressBlock_lazy2_dedicatedDictSearch_row }
+            {
+#ifdef ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_greedy_row,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_lazy_row,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_lazy2_row
+#endif
+            },
+            {
+#ifdef ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_greedy_extDict_row,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_lazy_extDict_row,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_lazy2_extDict_row
+#endif
+            },
+            {
+#ifdef ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_greedy_dictMatchState_row,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_lazy_dictMatchState_row,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_lazy2_dictMatchState_row
+#endif
+            },
+            {
+#ifdef ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_greedy_dedicatedDictSearch_row,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_lazy_dedicatedDictSearch_row,
+#endif
+#ifdef ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR
+                NULL,
+#else
+                ZSTD_compressBlock_lazy2_dedicatedDictSearch_row
+#endif
+            }
         };
         DEBUGLOG(4, "Selecting a row-based matchfinder");
         assert(useRowMatchFinder != ZSTD_ps_auto);
@@ -3280,22 +3485,27 @@ static size_t ZSTD_buildSeqStore(ZSTD_CCtx* zc, const void* src, size_t srcSize)
                 }
 
                 /* Fallback to software matchfinder */
-                {   ZSTD_blockCompressor const blockCompressor = ZSTD_selectBlockCompressor(zc->appliedParams.cParams.strategy,
-                                                                                            zc->appliedParams.useRowMatchFinder,
-                                                                                            dictMode);
+                {   ZSTD_blockCompressor const blockCompressor =
+                        ZSTD_selectBlockCompressor(
+                            zc->appliedParams.cParams.strategy,
+                            zc->appliedParams.useRowMatchFinder,
+                            dictMode);
                     ms->ldmSeqStore = NULL;
                     DEBUGLOG(
                         5,
                         "External sequence producer returned error code %lu. Falling back to internal parser.",
                         (unsigned long)nbExternalSeqs
                     );
+                    RETURN_ERROR_IF(blockCompressor == NULL, parameter_combination_unsupported, "Got NULL block compressor!");
                     lastLLSize = blockCompressor(ms, &zc->seqStore, zc->blockState.nextCBlock->rep, src, srcSize);
             }   }
         } else {   /* not long range mode and no external matchfinder */
-            ZSTD_blockCompressor const blockCompressor = ZSTD_selectBlockCompressor(zc->appliedParams.cParams.strategy,
-                                                                                    zc->appliedParams.useRowMatchFinder,
-                                                                                    dictMode);
+            ZSTD_blockCompressor const blockCompressor = ZSTD_selectBlockCompressor(
+                    zc->appliedParams.cParams.strategy,
+                    zc->appliedParams.useRowMatchFinder,
+                    dictMode);
             ms->ldmSeqStore = NULL;
+            RETURN_ERROR_IF(blockCompressor == NULL, parameter_combination_unsupported, "Got NULL block compressor!");
             lastLLSize = blockCompressor(ms, &zc->seqStore, zc->blockState.nextCBlock->rep, src, srcSize);
         }
         {   const BYTE* const lastLiterals = (const BYTE*)src + srcSize - lastLLSize;
@@ -4760,12 +4970,17 @@ static size_t ZSTD_loadDictionaryContent(ZSTD_matchState_t* ms,
         ZSTD_fillHashTable(ms, iend, dtlm, tfp);
         break;
     case ZSTD_dfast:
+#ifndef ZSTD_EXCLUDE_DFAST_BLOCK_COMPRESSOR
         ZSTD_fillDoubleHashTable(ms, iend, dtlm, tfp);
+#endif
         break;
 
     case ZSTD_greedy:
     case ZSTD_lazy:
     case ZSTD_lazy2:
+#if !defined(ZSTD_EXCLUDE_GREEDY_BLOCK_COMPRESSOR) \
+ || !defined(ZSTD_EXCLUDE_LAZY_BLOCK_COMPRESSOR) \
+ || !defined(ZSTD_EXCLUDE_LAZY2_BLOCK_COMPRESSOR)
         assert(srcSize >= HASH_READ_SIZE);
         if (ms->dedicatedDictSearch) {
             assert(ms->chainTable != NULL);
@@ -4782,14 +4997,20 @@ static size_t ZSTD_loadDictionaryContent(ZSTD_matchState_t* ms,
                 DEBUGLOG(4, "Using chain-based hash table for lazy dict");
             }
         }
+#endif
         break;
 
     case ZSTD_btlazy2:   /* we want the dictionary table fully sorted */
     case ZSTD_btopt:
     case ZSTD_btultra:
     case ZSTD_btultra2:
+#if !defined(ZSTD_EXCLUDE_BTLAZY2_BLOCK_COMPRESSOR) \
+ || !defined(ZSTD_EXCLUDE_BTOPT_BLOCK_COMPRESSOR) \
+ || !defined(ZSTD_EXCLUDE_BTULTRA_BLOCK_COMPRESSOR) \
+ || !defined(ZSTD_EXCLUDE_BTULTRA2_BLOCK_COMPRESSOR)
         assert(srcSize >= HASH_READ_SIZE);
         ZSTD_updateTree(ms, iend-HASH_READ_SIZE, iend);
+#endif
         break;
 
     default:
