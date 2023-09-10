@@ -41,6 +41,10 @@
 #  include <io.h>
 #endif
 
+#if (PLATFORM_POSIX_VERSION > 0)
+#  include <sys/mman.h>
+#endif
+
 #include "fileio.h"
 #include "fileio_asyncio.h"
 #include "fileio_common.h"
@@ -716,6 +720,54 @@ static size_t FIO_createDictBuffer(void** bufferPtr, const char* fileName, FIO_p
     return (size_t)fileSize;
 }
 
+/*! FIO_createDictBufferMMap() :
+ *  creates a buffer, pointed by `*bufferPtr` using mmap,
+ *  loads entire `filename` content into it.
+ * @return : loaded size
+ *  if fileName==NULL, returns 0 and a NULL pointer
+ */
+static size_t FIO_createDictBufferMMap(void** bufferPtr, const char* fileName, FIO_prefs_t* const prefs, stat_t* dictFileStat)
+{
+    int fileHandle;
+    U64 fileSize;
+
+    assert(bufferPtr != NULL);
+    assert(dictFileStat != NULL);
+    *bufferPtr = NULL;
+    if (fileName == NULL) return 0;
+
+    DISPLAYLEVEL(4,"Loading %s as dictionary \n", fileName);
+
+     if (!UTIL_stat(fileName, dictFileStat)) {
+        EXM_THROW(31, "Stat failed on dictionary file %s: %s", fileName, strerror(errno));
+    }
+
+    if (!UTIL_isRegularFileStat(dictFileStat)) {
+        EXM_THROW(32, "Dictionary %s must be a regular file.", fileName);
+    }
+
+    fileHandle = open(fileName, O_RDONLY);
+
+    if (fileHandle == -1) {
+        EXM_THROW(33, "Couldn't open dictionary %s: %s", fileName, strerror(errno));
+    }
+
+    fileSize = UTIL_getFileSizeStat(dictFileStat);
+
+    {
+        size_t const dictSizeMax = prefs->patchFromMode ? prefs->memLimit : DICTSIZE_MAX;
+        if (fileSize >  dictSizeMax) {
+            EXM_THROW(34, "Dictionary file %s is too large (> %u bytes)",
+                            fileName,  (unsigned)dictSizeMax);   /* avoid extreme cases */
+        }
+    }
+
+    *bufferPtr = mmap(NULL, (size_t)fileSize, PROT_READ, MAP_PRIVATE, fileHandle, 0);
+
+    close(fileHandle);
+    return (size_t)fileSize;
+}
+
 
 
 /* FIO_checkFilenameCollisions() :
@@ -925,6 +977,7 @@ typedef struct {
     ZSTD_CStream* cctx;
     WritePoolCtx_t *writeCtx;
     ReadPoolCtx_t *readCtx;
+    int mmapDict;
 } cRess_t;
 
 /** ZSTD_cycleLog() :
@@ -965,11 +1018,14 @@ static void FIO_adjustParamsForPatchFromMode(FIO_prefs_t* const prefs,
 static cRess_t FIO_createCResources(FIO_prefs_t* const prefs,
                                     const char* dictFileName, unsigned long long const maxSrcFileSize,
                                     int cLevel, ZSTD_compressionParameters comprParams) {
+    U64 const dictSize = UTIL_getFileSize(dictFileName);
+    int const mmapDict = prefs->patchFromMode && PLATFORM_POSIX_VERSION < 1 && dictSize > prefs->memLimit;
     cRess_t ress;
     memset(&ress, 0, sizeof(ress));
 
     DISPLAYLEVEL(6, "FIO_createCResources \n");
     ress.cctx = ZSTD_createCCtx();
+    ress.mmapDict = mmapDict;
     if (ress.cctx == NULL)
         EXM_THROW(30, "allocation error (%s): can't create ZSTD_CCtx",
                     strerror(errno));
@@ -978,9 +1034,14 @@ static cRess_t FIO_createCResources(FIO_prefs_t* const prefs,
      * because of memLimit check inside it */
     if (prefs->patchFromMode) {
         unsigned long long const ssSize = (unsigned long long)prefs->streamSrcSize;
-        FIO_adjustParamsForPatchFromMode(prefs, &comprParams, UTIL_getFileSize(dictFileName), ssSize > 0 ? ssSize : maxSrcFileSize, cLevel);
+        FIO_adjustParamsForPatchFromMode(prefs, &comprParams, dictSize, ssSize > 0 ? ssSize : maxSrcFileSize, cLevel);
     }
-    ress.dictBufferSize = FIO_createDictBuffer(&ress.dictBuffer, dictFileName, prefs, &ress.dictFileStat);   /* works with dictFileName==NULL */
+
+    if (!mmapDict) {
+        ress.dictBufferSize = FIO_createDictBuffer(&ress.dictBuffer, dictFileName, prefs, &ress.dictFileStat);   /* works with dictFileName==NULL */
+    } else {
+        ress.dictBufferSize = FIO_createDictBufferMMap(&ress.dictBuffer, dictFileName, prefs, &ress.dictFileStat);
+    }
 
     ress.writeCtx = AIO_WritePool_create(prefs, ZSTD_CStreamOutSize());
     ress.readCtx = AIO_ReadPool_create(prefs, ZSTD_CStreamInSize());
@@ -1046,7 +1107,11 @@ static cRess_t FIO_createCResources(FIO_prefs_t* const prefs,
 
 static void FIO_freeCResources(const cRess_t* const ress)
 {
-    free(ress->dictBuffer);
+    if (!ress->mmapDict) {
+        free(ress->dictBuffer);
+    } else {
+        munmap(ress->dictBuffer, ress->dictBufferSize);
+    }
     AIO_WritePool_free(ress->writeCtx);
     AIO_ReadPool_free(ress->readCtx);
     ZSTD_freeCStream(ress->cctx);   /* never fails */
@@ -2054,11 +2119,13 @@ typedef struct {
 
 static dRess_t FIO_createDResources(FIO_prefs_t* const prefs, const char* dictFileName)
 {
+    U64 const dictSize = UTIL_getFileSize(dictFileName);
+    int const mmapDict = prefs->patchFromMode && PLATFORM_POSIX_VERSION < 1 && dictSize > prefs->memLimit;
     dRess_t ress;
     memset(&ress, 0, sizeof(ress));
 
     if (prefs->patchFromMode)
-        FIO_adjustMemLimitForPatchFromMode(prefs, UTIL_getFileSize(dictFileName), 0 /* just use the dict size */);
+        FIO_adjustMemLimitForPatchFromMode(prefs, dictSize, 0 /* just use the dict size */);
 
     /* Allocation */
     ress.dctx = ZSTD_createDStream();
@@ -2070,10 +2137,22 @@ static dRess_t FIO_createDResources(FIO_prefs_t* const prefs, const char* dictFi
     /* dictionary */
     {   void* dictBuffer;
         stat_t statbuf;
-        size_t const dictBufferSize = FIO_createDictBuffer(&dictBuffer, dictFileName, prefs, &statbuf);
+        size_t dictBufferSize;
+
+        if (!mmapDict) {
+            dictBufferSize = FIO_createDictBuffer(&dictBuffer, dictFileName, prefs, &statbuf);
+        } else {
+            dictBufferSize = FIO_createDictBufferMMap(&dictBuffer, dictFileName, prefs, &statbuf);
+        }
+
         CHECK( ZSTD_DCtx_reset(ress.dctx, ZSTD_reset_session_only) );
         CHECK( ZSTD_DCtx_loadDictionary(ress.dctx, dictBuffer, dictBufferSize) );
-        free(dictBuffer);
+
+        if (!mmapDict) {
+            free(dictBuffer);
+        } else {
+            munmap(dictBuffer, dictBufferSize);
+        }
     }
 
     ress.writeCtx = AIO_WritePool_create(prefs, ZSTD_DStreamOutSize());
