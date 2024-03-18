@@ -1196,7 +1196,7 @@ ZSTD_compressBlock_opt_generic(ZSTD_matchState_t* ms,
         /* check further positions */
         for (cur = 1; cur <= last_pos; cur++) {
             const BYTE* const inr = ip + cur;
-            assert(cur < ZSTD_OPT_NUM);
+            assert(cur <= ZSTD_OPT_NUM);
             DEBUGLOG(7, "cPos:%zi==rPos:%u", inr-istart, cur);
 
             /* Fix current position with one literal if cheaper */
@@ -1216,6 +1216,7 @@ ZSTD_compressBlock_opt_generic(ZSTD_matchState_t* ms,
                     if ( (optLevel >= 1) /* additional check only for higher modes */
                       && (prevMatch.litlen == 0) /* replace a match */
                       && (LL_INCPRICE(1) < 0) /* ll1 is cheaper than ll0 */
+                      && LIKELY(ip + cur < iend)
                     ) {
                         /* check next position, in case it would be cheaper */
                         int with1literal = prevMatch.price + LIT_PRICE(ip+cur) + LL_INCPRICE(1);
