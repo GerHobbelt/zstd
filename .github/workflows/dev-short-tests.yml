@@ -80,19 +80,16 @@ jobs:
         make clean
         LDFLAGS=-Wl,--no-undefined make -C lib libzstd-mt
 
-    # candidate test (to check) : underlink test
+    # candidate test (for discussion) : underlink test
     # LDFLAGS=-Wl,--no-undefined : will make the linker fail if dll is underlinked
 
   cmake-build-and-test-check:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v3
-    - name: cmake build and test check
+    - name: cmake build and test
       run: |
-        FUZZERTEST=-T1mn ZSTREAM_TESTTIME=-T1mn make cmakebuild
-        cp -r ./ "../zstd source"
-        cd "../zstd source"
-        FUZZERTEST=-T1mn ZSTREAM_TESTTIME=-T1mn make cmakebuild
+        FUZZERTEST=-T1mn ZSTREAM_TESTTIME=-T1mn make cmakebuild V=1
 
   cpp-gnu90-c99-compatibility:
     runs-on: ubuntu-latest
@@ -524,25 +521,6 @@ jobs:
         make -C tests fuzzer &&
         ./tests/fuzzer.exe -v -T1m
 
-  intel-cet-compatibility:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v3
-    - name: Build Zstd
-      run: |
-        make -j zstd V=1
-        readelf -n zstd
-    - name: Get Intel SDE
-      run: |
-        curl -LO https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz
-        tar xJvf sde-external-9.0.0-2021-11-07-lin.tar.xz
-    - name: Configure Permissions
-      run: |
-        echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
-    - name: Run Under SDE
-      run: |
-        sde-external-9.0.0-2021-11-07-lin/sde -cet -cet-raise 0 -cet-endbr-exe -cet-stderr -cet-abort -- ./zstd -b3
-
   pkg-config:
     runs-on: ubuntu-latest
     container:
@@ -600,9 +578,9 @@ jobs:
         ./programs/zstd -b
 
 
-# For reference : icc tests
+# Failing tests, for reference
+
 # icc tests are currently failing on Github Actions, likely to issues during installation stage
-# To be fixed later
 #
 #  icc:
 #    name: icc-check
@@ -622,3 +600,25 @@ jobs:
 #    - name: make check
 #      run: |
 #        make CC=/opt/intel/oneapi/compiler/latest/linux/bin/intel64/icc check
+
+
+# intel-cet-compatibility tests are currently failing, during download stage
+#
+#  intel-cet-compatibility:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v3
+#    - name: Build Zstd
+#      run: |
+#        make -j zstd V=1
+#        readelf -n zstd
+#    - name: Get Intel SDE
+#      run: |
+#        curl -LO https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz
+#        tar xJvf sde-external-9.0.0-2021-11-07-lin.tar.xz
+#    - name: Configure Permissions
+#      run: |
+#        echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+#    - name: Run Under SDE
+#      run: |
+#        sde-external-9.0.0-2021-11-07-lin/sde -cet -cet-raise 0 -cet-endbr-exe -cet-stderr -cet-abort -- ./zstd -b3
