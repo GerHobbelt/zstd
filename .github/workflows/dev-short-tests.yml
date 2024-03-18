@@ -271,7 +271,7 @@ jobs:
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v3
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@1ff57057b5cfdc39105cd07a01d78e9b0ea0c14c # tag=v1.3
+      uses: microsoft/setup-msbuild@031090342aeefe171e49f3820f3b52110c66e402 # tag=v1.3
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
@@ -298,7 +298,7 @@ jobs:
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v3
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@1ff57057b5cfdc39105cd07a01d78e9b0ea0c14c # tag=v1.3
+      uses: microsoft/setup-msbuild@031090342aeefe171e49f3820f3b52110c66e402 # tag=v1.3
     - name: Build ${{matrix.name}}
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
@@ -381,6 +381,7 @@ jobs:
           { name: S390X,    xcc_pkg: gcc-s390x-linux-gnu,       xcc: s390x-linux-gnu-gcc,       xemu_pkg: qemu-system-s390x,  xemu: qemu-s390x-static   },
           { name: MIPS,     xcc_pkg: gcc-mips-linux-gnu,        xcc: mips-linux-gnu-gcc,        xemu_pkg: qemu-system-mips,   xemu: qemu-mips-static    },
           { name: M68K,     xcc_pkg: gcc-m68k-linux-gnu,        xcc: m68k-linux-gnu-gcc,        xemu_pkg: qemu-system-m68k,   xemu: qemu-m68k-static    },
+          { name: SPARC,    xcc_pkg: gcc-sparc64-linux-gnu,     xcc: sparc64-linux-gnu-gcc,     xemu_pkg: qemu-system-sparc,  xemu: qemu-sparc64-static },
         ]
     env:                        # Set environment variables
       XCC: ${{ matrix.xcc }}
@@ -425,6 +426,10 @@ jobs:
         LDFLAGS="-static" CC=$XCC QEMU_SYS=$XEMU make clean check
     - name: M68K
       if: ${{ matrix.name == 'M68K' }}
+      run: |
+        LDFLAGS="-static" CC=$XCC QEMU_SYS=$XEMU make clean check
+    - name: SPARC
+      if: ${{ matrix.name == 'SPARC' }}
       run: |
         LDFLAGS="-static" CC=$XCC QEMU_SYS=$XEMU make clean check
 
@@ -480,7 +485,7 @@ jobs:
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v3
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@1ff57057b5cfdc39105cd07a01d78e9b0ea0c14c # tag=v1.3
+      uses: microsoft/setup-msbuild@031090342aeefe171e49f3820f3b52110c66e402 # tag=v1.3
     - name: Build and run tests
       working-directory: ${{env.GITHUB_WORKSPACE}}
       env:
@@ -577,6 +582,25 @@ jobs:
         make -C programs zstd-pgo
         ./programs/zstd -b
 
+  intel-cet-compatibility:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v3
+    - name: Build Zstd
+      run: |
+        make -j zstd V=1
+        readelf -n zstd
+    - name: Get Intel SDE
+      run: |
+        curl -LO https://downloadmirror.intel.com/813591/sde-external-9.33.0-2024-01-07-lin.tar.xz
+        tar xJvf sde-external-9.33.0-2024-01-07-lin.tar.xz
+    - name: Configure Permissions
+      run: |
+        echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+    - name: Run Under SDE
+      run: |
+        sde-external-9.33.0-2024-01-07-lin/sde -cet -cet-raise 0 -cet-endbr-exe -cet-stderr -cet-abort -- ./zstd -b3
+
 
 # Failing tests, for reference
 
@@ -600,25 +624,3 @@ jobs:
 #    - name: make check
 #      run: |
 #        make CC=/opt/intel/oneapi/compiler/latest/linux/bin/intel64/icc check
-
-
-# intel-cet-compatibility tests are currently failing, during download stage
-#
-#  intel-cet-compatibility:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v3
-#    - name: Build Zstd
-#      run: |
-#        make -j zstd V=1
-#        readelf -n zstd
-#    - name: Get Intel SDE
-#      run: |
-#        curl -LO https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz
-#        tar xJvf sde-external-9.0.0-2021-11-07-lin.tar.xz
-#    - name: Configure Permissions
-#      run: |
-#        echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
-#    - name: Run Under SDE
-#      run: |
-#        sde-external-9.0.0-2021-11-07-lin/sde -cet -cet-raise 0 -cet-endbr-exe -cet-stderr -cet-abort -- ./zstd -b3
