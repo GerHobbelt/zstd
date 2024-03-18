@@ -2805,7 +2805,7 @@ ZSTDLIB_STATIC_API size_t ZSTD_resetDStream(ZSTD_DStream* zds);
 
 #define ZSTD_SEQUENCE_PRODUCER_ERROR ((size_t)(-1))
 
-typedef size_t ZSTD_sequenceProducer_F (
+typedef size_t (*ZSTD_sequenceProducer_F) (
   void* sequenceProducerState,
   ZSTD_Sequence* outSeqs, size_t outSeqsCapacity,
   const void* src, size_t srcSize,
@@ -2837,7 +2837,7 @@ ZSTDLIB_STATIC_API void
 ZSTD_registerSequenceProducer(
   ZSTD_CCtx* cctx,
   void* sequenceProducerState,
-  ZSTD_sequenceProducer_F* sequenceProducer
+  ZSTD_sequenceProducer_F sequenceProducer
 );
 
 
