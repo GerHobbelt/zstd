@@ -797,10 +797,8 @@ static ZSTD_frameSizeInfo ZSTD_findFrameSizeInfo(const void* src, size_t srcSize
 }
 
 /** ZSTD_findFrameCompressedSize() :
- *  compatible with legacy mode
- *  `src` must point to the start of a ZSTD frame, ZSTD legacy frame, or skippable frame
- *  `srcSize` must be at least as large as the frame contained
- *  @return : the compressed size of the frame starting at `src` */
+ * See docs in zstd.h
+ * Note: compatible with legacy mode */
 size_t ZSTD_findFrameCompressedSize(const void *src, size_t srcSize)
 {
     ZSTD_frameSizeInfo const frameSizeInfo = ZSTD_findFrameSizeInfo(src, srcSize);
@@ -1092,6 +1090,15 @@ size_t ZSTD_decompressMultiFrame(ZSTD_DCtx* dctx,
 
             decodedSize = ZSTD_decompressLegacy(dst, dstCapacity, src, frameSize, dict, dictSize);
             if (ZSTD_isError(decodedSize)) return decodedSize;
+
+            {
+                unsigned long long const expectedSize = ZSTD_getFrameContentSize(src, srcSize);
+                RETURN_ERROR_IF(expectedSize == ZSTD_CONTENTSIZE_ERROR, corruption_detected, "Corrupted frame header!");
+                if (expectedSize != ZSTD_CONTENTSIZE_UNKNOWN) {
+                    RETURN_ERROR_IF(expectedSize != decodedSize, corruption_detected,
+                        "Frame header size does not match decoded size!");
+                }
+            }
 
             assert(decodedSize <= dstCapacity);
             dst = (BYTE*)dst + decodedSize;
