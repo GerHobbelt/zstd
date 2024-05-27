@@ -67,6 +67,8 @@ static int gz_init(gz_state *state) {
         strm->next_out = state->out;
         state->x.next = strm->next_out;
     }
+
+    free(state.state);
     return 0;
 }
 
