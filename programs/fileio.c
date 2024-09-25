@@ -3138,8 +3138,8 @@ FIO_decompressMultipleFilenames(FIO_ctx_t* const fCtx,
 
     if (FIO_shouldDisplayMultipleFileSummary(fCtx)) {
         DISPLAY_PROGRESS("\r%79s\r", "");
-        DISPLAY_SUMMARY("%d files decompressed : %6llu bytes total \n",
-            fCtx->nbFilesProcessed, (unsigned long long)fCtx->totalBytesOutput);
+        DISPLAY_SUMMARY("%d files decompressed : %6zu bytes total \n",
+            fCtx->nbFilesProcessed, fCtx->totalBytesOutput);
     }
 
     FIO_freeDResources(ress);
