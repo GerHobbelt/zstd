@@ -667,7 +667,7 @@ FIO_openDstFile(FIO_ctx_t* fCtx, FIO_prefs_t* const prefs,
             if (UTIL_isFileDescriptorPipe(dstFileName)) {
                 DISPLAYLEVEL(1, "zstd: error: no output specified (use -o or -c). \n");
             } else {
-                DISPLAYLEVEL(1, "zstd: %s: %s\n", dstFileName, strerror(errno));
+                DISPLAYLEVEL(1, "zstd: cannot open file %s: %s\n", dstFileName, strerror(errno));
             }
         } else {
             /* An increased buffer size can provide a significant performance
