@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
-    - name: ensure zstd can be build with c89/c90 compilers (+ long long support + variadic macros)
+    - name: ensure zstd can be built with c89/c90 compilers (+ long long support + variadic macros)
       run: |
         make c89build V=1
 
@@ -544,7 +544,7 @@ jobs:
         shell: msys2 {0}
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
-    - uses: msys2/setup-msys2@d44ca8e88d8b43d56cf5670f91747359d5537f97 # tag=v2.26.0
+    - uses: msys2/setup-msys2@61f9e5e925871ba6c9e3e8da24ede83ea27fa91f # tag=v2.27.0
       with:
         msystem: ${{ matrix.msystem }}
         install: make diffutils
@@ -683,6 +683,17 @@ jobs:
         llvm-profdata --version
         make -C programs zstd-pgo
         ./programs/zstd -b
+
+  musl-build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
+      - name: Install musl-tools
+        run: |
+          sudo apt install -y musl-tools
+      - name: Compile the project with musl-gcc
+        run: |
+          CC=musl-gcc CPPFLAGS=-DZSTD_USE_C90_QSORT make -j V=1 zstd
 
   intel-cet-compatibility:
     runs-on: ubuntu-latest

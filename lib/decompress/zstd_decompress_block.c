@@ -1413,7 +1413,7 @@ ZSTD_decompressSequences_bodySplitLitBuffer( ZSTD_DCtx* dctx,
                          const ZSTD_longOffset_e isLongOffset)
 {
     BYTE* const ostart = (BYTE*)dst;
-    BYTE* const oend = ZSTD_maybeNullPtrAdd(ostart, (ptrdiff_t)maxDstSize);
+    BYTE* const oend = (BYTE*)ZSTD_maybeNullPtrAdd(ostart, (ptrdiff_t)maxDstSize);
     BYTE* op = ostart;
     const BYTE* litPtr = dctx->litPtr;
     const BYTE* litBufferEnd = dctx->litBufferEnd;
@@ -1625,7 +1625,7 @@ ZSTD_decompressSequences_body(ZSTD_DCtx* dctx,
 {
     BYTE* const ostart = (BYTE*)dst;
     BYTE* const oend = (dctx->litBufferLocation == ZSTD_not_in_dst) ?
-                        ZSTD_maybeNullPtrAdd(ostart, (ptrdiff_t)maxDstSize) :
+                        (BYTE*)ZSTD_maybeNullPtrAdd(ostart, (ptrdiff_t)maxDstSize) :
                         dctx->litBuffer;
     BYTE* op = ostart;
     const BYTE* litPtr = dctx->litPtr;
@@ -1725,7 +1725,7 @@ size_t ZSTD_prefetchMatch(size_t prefetchPos, seq_t const sequence,
     {   const BYTE* const matchBase = (sequence.offset > prefetchPos) ? dictEnd : prefixStart;
         /* note : this operation can overflow when seq.offset is really too large, which can only happen when input is corrupted.
          * No consequence though : memory address is only used for prefetching, not for dereferencing */
-        const BYTE* const match = ZSTD_wrappedPtrSub(ZSTD_wrappedPtrAdd(matchBase, (ptrdiff_t)prefetchPos), (ptrdiff_t)sequence.offset);
+        const BYTE* const match = (const BYTE*)ZSTD_wrappedPtrSub(ZSTD_wrappedPtrAdd(matchBase, (ptrdiff_t)prefetchPos), (ptrdiff_t)sequence.offset);
         PREFETCH_L1(match); PREFETCH_L1(match+CACHELINE_SIZE);   /* note : it's safe to invoke PREFETCH() on any memory address, including invalid ones */
     }
     return prefetchPos + sequence.matchLength;
@@ -1745,7 +1745,7 @@ ZSTD_decompressSequencesLong_body(
     BYTE* const ostart = (BYTE*)dst;
     BYTE* const oend = (dctx->litBufferLocation == ZSTD_in_dst) ?
                         dctx->litBuffer :
-                        ZSTD_maybeNullPtrAdd(ostart, (ptrdiff_t)maxDstSize);
+                        (BYTE*)ZSTD_maybeNullPtrAdd(ostart, (ptrdiff_t)maxDstSize);
     BYTE* op = ostart;
     const BYTE* litPtr = dctx->litPtr;
     const BYTE* litBufferEnd = dctx->litBufferEnd;
@@ -2001,9 +2001,9 @@ ZSTD_decompressSequencesLong(ZSTD_DCtx* dctx,
  * both the prefix and the extDict. At @p op any offset larger than this
  * is invalid.
  */
-static size_t ZSTD_totalHistorySize(BYTE* op, BYTE const* virtualStart)
+static size_t ZSTD_totalHistorySize(void* curPtr, const void* virtualStart)
 {
-    return (size_t)(op - virtualStart);
+    return (size_t)((char*)curPtr - (const char*)virtualStart);
 }
 
 typedef struct {

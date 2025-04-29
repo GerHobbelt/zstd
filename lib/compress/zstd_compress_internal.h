@@ -1523,7 +1523,7 @@ typedef struct {
 /* for benchmark */
 size_t ZSTD_convertBlockSequences(ZSTD_CCtx* cctx,
                         const ZSTD_Sequence* const inSeqs, size_t nbSequences,
-                        int const repcodeResolution);
+                        int repcodeResolution);
 
 typedef struct {
     size_t nbSequences;
