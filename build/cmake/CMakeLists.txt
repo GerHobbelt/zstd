@@ -30,8 +30,11 @@ set(LIBRARY_DIR ${ZSTD_SOURCE_DIR}/lib)
 include(GetZstdLibraryVersion)
 GetZstdLibraryVersion(${LIBRARY_DIR}/zstd.h zstd_VERSION_MAJOR zstd_VERSION_MINOR zstd_VERSION_PATCH)
 
+set(ZSTD_SHORT_VERSION "${zstd_VERSION_MAJOR}.${zstd_VERSION_MINOR}")
+set(ZSTD_FULL_VERSION "${zstd_VERSION_MAJOR}.${zstd_VERSION_MINOR}.${zstd_VERSION_PATCH}")
+
 project(zstd
-  VERSION "${zstd_VERSION_MAJOR}.${zstd_VERSION_MINOR}.${zstd_VERSION_PATCH}"
+  VERSION "${ZSTD_FULL_VERSION}"
   LANGUAGES C   # Main library is in C
             ASM # And ASM
             CXX # Testing contributed code also utilizes CXX
@@ -80,6 +83,10 @@ if (ZSTD_LEGACY_SUPPORT)
 else ()
     message(STATUS "ZSTD_LEGACY_SUPPORT not defined!")
     add_definitions(-DZSTD_LEGACY_SUPPORT=0)
+endif ()
+
+if (APPLE)
+    option(ZSTD_FRAMEWORK "Build as Apple Frameworks" OFF)
 endif ()
 
 if (ANDROID)

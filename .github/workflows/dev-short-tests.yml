@@ -192,7 +192,7 @@ jobs:
       run: |
         sudo apt-get -qqq update
         make libc6install
-        CFLAGS="-Werror -m32 -mavx2" make -j all32
+        CPPFLAGS="-DSTATIC_BMI2=1" CFLAGS="-Werror -m32 -mavx2 -mbmi2" make -j all32
 
 
   gcc-8-make:
@@ -582,7 +582,7 @@ jobs:
     steps:
     - run: git config --global core.autocrlf input
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
-    - uses: cygwin/cygwin-install-action@006ad0b0946ca6d0a3ea2d4437677fa767392401 # tag=master
+    - uses: cygwin/cygwin-install-action@f61179d72284ceddc397ed07ddb444d82bf9e559 # tag=v5
       with:
         platform: x86_64
         packages: >-

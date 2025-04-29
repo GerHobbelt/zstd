@@ -207,9 +207,9 @@
 #  pragma warning(disable : 4324)        /* disable: C4324: padded structure */
 #endif
 
-/*Like DYNAMIC_BMI2 but for compile time determination of BMI2 support*/
+/* Like DYNAMIC_BMI2 but for compile time determination of BMI2 support */
 #ifndef STATIC_BMI2
-#  if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
+#  if defined(_MSC_VER)
 #    ifdef __AVX2__  /* MSVC does not have a BMI2 specific flag, but every CPU that supports AVX2 also supports BMI2 */
 #      include <immintrin.h>
 #      define STATIC_BMI2 1
@@ -217,7 +217,7 @@
 #         define ZSTD_NO_BZHI_INTRINSIC 1      // bzhi is only supported in 64bit builds.
 #      endif
 #    endif
-#  elif defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
+#  elif defined(__GNUC__)
 #    ifdef __BMI2__
 #      define STATIC_BMI2 1
 #    endif
@@ -234,7 +234,7 @@
 #  if defined(__AVX2__)
 #    define ZSTD_ARCH_X86_AVX2
 #  endif
-#  if defined(__SSE2__) || defined(_M_AMD64) || (defined (_M_IX86) && defined(_M_IX86_FP) && (_M_IX86_FP >= 2))
+#  if defined(__SSE2__) || defined(_M_X64) || (defined (_M_IX86) && defined(_M_IX86_FP) && (_M_IX86_FP >= 2))
 #    define ZSTD_ARCH_X86_SSE2
 #  endif
 #  if defined(__ARM_NEON) || defined(_M_ARM64)
@@ -328,6 +328,8 @@ MEM_STATIC int ZSTD_isPower2(size_t u) {
 #  define ZSTD_ALIGNED(a) __attribute__((aligned(a)))
 # elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) /* C11 */
 #  define ZSTD_ALIGNED(a) alignas(a)
+#elif defined(_MSC_VER)
+#  define ZSTD_ALIGNED(n) __declspec(align(n))
 # else
    /* this compiler will require its own alignment instruction */
 #  define ZSTD_ALIGNED(...)

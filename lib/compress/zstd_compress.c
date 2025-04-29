@@ -7125,7 +7125,7 @@ size_t ZSTD_compressSequences(ZSTD_CCtx* cctx,
  * @returns > 0 if there is one long length (> 65535),
  * indicating the position, and type.
  */
-size_t convertSequences_noRepcodes(
+static size_t convertSequences_noRepcodes(
     SeqDef* dstSeqs,
     const ZSTD_Sequence* inSeqs,
     size_t nbSequences)
@@ -7277,9 +7277,10 @@ size_t convertSequences_noRepcodes(
 
 #else /* no AVX2 */
 
-static size_t
-convertSequences_noRepcodes(SeqDef* dstSeqs,
-                const ZSTD_Sequence* const inSeqs, size_t nbSequences)
+static size_t convertSequences_noRepcodes(
+    SeqDef* dstSeqs,
+    const ZSTD_Sequence* inSeqs,
+    size_t nbSequences)
 {
     size_t longLen = 0;
     size_t n;

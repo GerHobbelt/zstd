@@ -220,8 +220,28 @@ if (ZSTD_BUILD_SHARED)
             libzstd_shared
             PROPERTIES
             OUTPUT_NAME zstd
-            VERSION ${zstd_VERSION_MAJOR}.${zstd_VERSION_MINOR}.${zstd_VERSION_PATCH}
+            VERSION ${ZSTD_FULL_VERSION}
             SOVERSION ${zstd_VERSION_MAJOR})
+            
+    if (ZSTD_FRAMEWORK)
+        set_target_properties(
+                libzstd_shared
+                PROPERTIES
+                FRAMEWORK TRUE
+                FRAMEWORK_VERSION "${ZSTD_FULL_VERSION}"
+                PRODUCT_BUNDLE_IDENTIFIER "github.com/facebook/zstd"
+                XCODE_ATTRIBUTE_INSTALL_PATH "@rpath"
+                PUBLIC_HEADER "${PublicHeaders}"
+                OUTPUT_NAME "zstd"
+                XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ""
+                XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "NO"
+                XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
+                MACOSX_FRAMEWORK_IDENTIFIER "github.com/facebook/zstd"
+                MACOSX_FRAMEWORK_BUNDLE_VERSION "${ZSTD_FULL_VERSION}"
+                MACOSX_FRAMEWORK_SHORT_VERSION_STRING "${ZSTD_SHORT_VERSION}"
+                MACOSX_RPATH TRUE
+                RESOURCE ${PublicHeaders})
+    endif ()
 endif ()
 
 if (ZSTD_BUILD_STATIC)
@@ -230,6 +250,26 @@ if (ZSTD_BUILD_STATIC)
             PROPERTIES
             POSITION_INDEPENDENT_CODE On
             OUTPUT_NAME ${STATIC_LIBRARY_BASE_NAME})
+
+    if (ZSTD_FRAMEWORK)
+        set_target_properties(
+                libzstd_static
+                PROPERTIES
+                FRAMEWORK TRUE
+                FRAMEWORK_VERSION "${ZSTD_FULL_VERSION}"
+                PRODUCT_BUNDLE_IDENTIFIER "github.com/facebook/zstd/${STATIC_LIBRARY_BASE_NAME}"
+                XCODE_ATTRIBUTE_INSTALL_PATH "@rpath"
+                PUBLIC_HEADER "${PublicHeaders}"
+                OUTPUT_NAME "${STATIC_LIBRARY_BASE_NAME}"
+                XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ""
+                XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "NO"
+                XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
+                MACOSX_FRAMEWORK_IDENTIFIER "github.com/facebook/zstd/${STATIC_LIBRARY_BASE_NAME}"
+                MACOSX_FRAMEWORK_BUNDLE_VERSION "${ZSTD_FULL_VERSION}"
+                MACOSX_FRAMEWORK_SHORT_VERSION_STRING "${ZSTD_SHORT_VERSION}"
+                MACOSX_RPATH TRUE
+                RESOURCE ${PublicHeaders})
+    endif ()
 endif ()
 
 # pkg-config
@@ -254,6 +294,9 @@ install(TARGETS ${library_targets}
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     BUNDLE DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    FRAMEWORK DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT runtime OPTIONAL
+    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     )
 
 # uninstall target
