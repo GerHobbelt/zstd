@@ -142,4 +142,4 @@ EXPORT_SYMBOL(zstd_get_frame_header);
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_DESCRIPTION("Zstd Decompressor");
 
-#endif
+#endif    // !defined(_MSC_VER)

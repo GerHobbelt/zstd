@@ -287,4 +287,4 @@ EXPORT_SYMBOL(zstd_compress_sequences_and_literals);
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_DESCRIPTION("Zstd Compressor");
 
-#endif
+#endif   // !defined(_MSC_VER)
