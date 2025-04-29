@@ -20,7 +20,7 @@
 #include <sys/types.h>    /* stat, utime */
 #include <sys/stat.h>     /* stat, chmod */
 #include "../lib/common/mem.h"          /* U64 */
-#if not (defined(_MSC_VER) || defined(__MINGW32__) || defined (__MSVCRT__))
+#if !(defined(_MSC_VER) || defined(__MINGW32__) || defined (__MSVCRT__))
 #include <libgen.h>
 #endif
 
