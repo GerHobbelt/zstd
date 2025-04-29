@@ -1183,7 +1183,7 @@ ZDICTLIB_STATIC_API size_t ZDICT_optimizeTrainFromBuffer_cover(
       (1 + (kMaxD - kMinD) / 2) * (1 + (kMaxK - kMinK) / kStepSize);
   const unsigned shrinkDict = 0;
   /* Local variables */
-  const int displayLevel = parameters->zParams.notificationLevel;
+  const int displayLevel = (int)parameters->zParams.notificationLevel;
   unsigned iteration = 1;
   unsigned d;
   unsigned k;
@@ -1261,7 +1261,7 @@ ZDICTLIB_STATIC_API size_t ZDICT_optimizeTrainFromBuffer_cover(
       data->parameters.splitPoint = splitPoint;
       data->parameters.steps = kSteps;
       data->parameters.shrinkDict = shrinkDict;
-      data->parameters.zParams.notificationLevel = g_displayLevel;
+      data->parameters.zParams.notificationLevel = (unsigned)g_displayLevel;
       /* Check the parameters */
       if (!COVER_checkParameters(data->parameters, dictBufferCapacity)) {
         DISPLAYLEVEL(1, "Cover parameters incorrect\n");
