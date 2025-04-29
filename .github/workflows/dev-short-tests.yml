@@ -164,6 +164,16 @@ jobs:
         make clean
         bash tests/libzstd_builds.sh
 
+  gcc-make-all-avx2:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
+    - name: Make all, with AVX2
+      run: |
+        sudo apt-get -qqq update
+        make libc6install
+        CFLAGS="-Werror -mavx2" make -j all
+
   gcc-make-all-32bit:
     runs-on: ubuntu-latest
     steps:
@@ -178,7 +188,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
-    - name: Make all, 32bit mode
+    - name: Make all, 32bit + AVX2 mode
       run: |
         sudo apt-get -qqq update
         make libc6install
