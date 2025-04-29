@@ -679,7 +679,7 @@ static void printVersion(void)
         #ifdef _POSIX_VERSION
             DISPLAYOUT("_POSIX_VERSION defined: %ldL \n", (long) _POSIX_VERSION);
         #endif
-        #ifdef PLATFORM_POSIX_VERSION
+        #if PLATFORM_POSIX_VERSION
             DISPLAYOUT("PLATFORM_POSIX_VERSION defined: %ldL\n", (long) PLATFORM_POSIX_VERSION);
         #endif
     }   }
