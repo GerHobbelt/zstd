@@ -37,18 +37,6 @@ jobs:
         APT_PACKAGES="gcc-multilib" make apt-install
         CFLAGS="-m32 -O1 -fstack-protector" make check V=1
 
-  check-x32:
-    runs-on: ubuntu-20.04  # ubuntu-latest == ubuntu-22.04 have issues currently with x32
-    steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
-    - name: make check on x32 ABI # https://en.wikipedia.org/wiki/X32_ABI
-      env:
-        CHECK_CONSTRAINED_MEM: true
-      run: |
-        sudo apt update
-        APT_PACKAGES="gcc-multilib" make apt-install
-        CFLAGS="-mx32 -O1 -fstack-protector" make check V=1
-
   build-c89:
     runs-on: ubuntu-latest
     steps:
@@ -109,7 +97,7 @@ jobs:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
       with:
         path: "${{ env.SRC_DIR }}"
-    - uses: ilammy/msvc-dev-cmd@v1
+    - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
       if: ${{ matrix.generator == 'NMake Makefiles' }}
     - name: cmake build on a source directory with spaces
       run: |
@@ -467,13 +455,13 @@ jobs:
 
   qemu-consistency:
     name: QEMU ${{ matrix.name }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false  # 'false' means Don't stop matrix workflows even if some matrix failed.
       matrix:
         include: [
           { name: ARM,      xcc_pkg: gcc-arm-linux-gnueabi,     xcc: arm-linux-gnueabi-gcc,     xemu_pkg: qemu-system-arm,    xemu: qemu-arm-static     },
-          { name: ARM64,    xcc_pkg: gcc-aarch64-linux-gnu,     xcc: aarch64-linux-gnu-gcc,     xemu_pkg: qemu-system-arm,    xemu: qemu-aarch64-static },
+          { name: ARM64,    xcc_pkg: gcc-aarch64-linux-gnu,     xcc: aarch64-linux-gnu-gcc,     xemu_pkg: qemu-system-aarch64,xemu: qemu-aarch64-static },
           { name: PPC,      xcc_pkg: gcc-powerpc-linux-gnu,     xcc: powerpc-linux-gnu-gcc,     xemu_pkg: qemu-system-ppc,    xemu: qemu-ppc-static     },
           { name: PPC64LE,  xcc_pkg: gcc-powerpc64le-linux-gnu, xcc: powerpc64le-linux-gnu-gcc, xemu_pkg: qemu-system-ppc,    xemu: qemu-ppc64le-static },
           { name: S390X,    xcc_pkg: gcc-s390x-linux-gnu,       xcc: s390x-linux-gnu-gcc,       xemu_pkg: qemu-system-s390x,  xemu: qemu-s390x-static   },
@@ -506,8 +494,12 @@ jobs:
     - name: ARM64
       if: ${{ matrix.name == 'ARM64' }}
       run: |
-        LDFLAGS="-static -z force-bti" MOREFLAGS="-mbranch-protection=standard" CC=$XCC QEMU_SYS=$XEMU make clean check
-        LDFLAGS="-static" CC=$XCC QEMU_SYS=$XEMU make clean check
+        make clean
+        LDFLAGS="-static" CC=$XCC QEMU_SYS=$XEMU make -j check
+# This test is only compatible with standard libraries that support BTI (Branch Target Identification).
+# Unfortunately, the standard library provided on Ubuntu 24.04 does not have this feature enabled.
+#        make clean
+#        LDFLAGS="-static -z force-bti" MOREFLAGS="-mbranch-protection=standard" CC=$XCC QEMU_SYS=$XEMU make check V=1
     - name: PPC
       if: ${{ matrix.name == 'PPC' }}
       run: |
@@ -711,26 +703,23 @@ jobs:
       run: |
         sde-external-9.33.0-2024-01-07-lin/sde -cet -cet-raise 0 -cet-endbr-exe -cet-stderr -cet-abort -- ./zstd -b3
 
+  icx:
+    # install instructions: https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2025-0/apt-005.html
+    name: icx-check
+    runs-on: ubuntu-latest
+    steps:
+    - name: install icx
+      run: |
+        # download the key to system keyring
+        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+        | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
 
-# Failing tests, for reference
-
-# icc tests are currently failing on Github Actions, likely to issues during installation stage
-#
-#  icc:
-#    name: icc-check
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: install icc
-#      run: |
-#        export DEBIAN_FRONTEND=noninteractive
-#        sudo apt-get -qqq update
-#        sudo apt-get install -y wget build-essential pkg-config cmake ca-certificates gnupg
-#        sudo wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-#        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-#        sudo add-apt-repository "deb https://apt.repos.intel.com/oneapi all main"
-#        sudo apt-get update
-#        sudo apt-get install -y intel-basekit intel-hpckit
-#    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
-#    - name: make check
-#      run: |
-#        make CC=/opt/intel/oneapi/compiler/latest/linux/bin/intel64/icc check
+        # add signed entry to apt sources and configure the APT client to use Intel repository:
+        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt-get update
+        sudo apt-get install -y intel-basekit intel-hpckit
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
+    - name: make check
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        make CC=icx check

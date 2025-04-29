@@ -222,16 +222,13 @@ jobs:
         sudo apt-get install clang
         CC=clang FUZZER_FLAGS="--long-tests" make clean msan-fuzztest
 
-  # lasts ~24mn
   clang-msan-testzstd:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
     - name: clang + MSan + Test Zstd
       run: |
-        sudo apt-get update
-        sudo apt-get install clang
-        CC=clang make msan-test-zstd HAVE_ZLIB=0 HAVE_LZ4=0 HAVE_LZMA=0 V=1
+        CC=clang make -j msan-test-zstd HAVE_ZLIB=0 HAVE_LZ4=0 HAVE_LZMA=0 V=1
 
   armfuzz:
       runs-on: ubuntu-latest
