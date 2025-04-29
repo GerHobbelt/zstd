@@ -16,11 +16,6 @@
 #define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_parameters */
 #include "../zstd.h"            /* ZSTD_inBuffer, ZSTD_outBuffer, ZSTDLIB_API */
 
- #if defined (__cplusplus)
- extern "C" {
- #endif
-
-
 /* Note : This is an internal API.
  *        These APIs used to be exposed with ZSTDLIB_API,
  *        because it used to be the only way to invoke MT compression.
@@ -103,10 +98,5 @@ void ZSTDMT_updateCParams_whileCompressing(ZSTDMT_CCtx* mtctx, const ZSTD_CCtx_p
  *  able to count progression inside worker threads.
  */
 ZSTD_frameProgression ZSTDMT_getFrameProgression(ZSTDMT_CCtx* mtctx);
-
-
-#if defined (__cplusplus)
-}
-#endif
 
 #endif   /* ZSTDMT_COMPRESS_H */

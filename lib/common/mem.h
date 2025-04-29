@@ -72,11 +72,6 @@
   typedef   signed long long  S64;
 #endif
 
-
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 /*-**************************************************************
 *  Memory I/O API
 *****************************************************************/
@@ -423,10 +418,5 @@ MEM_STATIC void MEM_writeBEST(void* memPtr, size_t val)
 
 /* code only tested on 32 and 64 bits systems */
 MEM_STATIC void MEM_check(void) { DEBUG_STATIC_ASSERT((sizeof(size_t)==4) || (sizeof(size_t)==8)); }
-
-
-#if defined (__cplusplus)
-}
-#endif
 
 #endif /* MEM_H_MODULE */

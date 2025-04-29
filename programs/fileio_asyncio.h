@@ -31,10 +31,6 @@
 
 #define MAX_IO_JOBS          (10)
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 typedef struct {
     /* These struct fields should be set only on creation and not changed afterwards */
     POOL_ctx* threadPool;
@@ -195,9 +191,5 @@ FILE* AIO_ReadPool_getFile(const ReadPoolCtx_t *ctx);
 /* AIO_ReadPool_closeFile:
  * Closes the current set file. Waits for all current enqueued tasks to complete and resets state. */
 int AIO_ReadPool_closeFile(ReadPoolCtx_t *ctx);
-
-#if defined (__cplusplus)
-}
-#endif
 
 #endif /* ZSTD_FILEIO_ASYNCIO_H */

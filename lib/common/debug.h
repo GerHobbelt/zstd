@@ -71,12 +71,9 @@
 #  endif
 #endif
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 #if (DEBUGLEVEL>=2)
 #  define ZSTD_DEPS_NEED_IO
+#  include "zstd_deps.h"
 extern int g_debuglevel; /* the variable is only declared,
                             it actually lives in debug.c,
                             and is shared by the whole process.
@@ -105,11 +102,6 @@ extern int g_debuglevel; /* the variable is only declared,
 #else
 #  define RAWLOG(l, ...)   do { } while (0)    /* disabled */
 #  define DEBUGLOG(l, ...) do { } while (0)    /* disabled */
-#endif
-
-
-#if defined (__cplusplus)
-}
 #endif
 
 #endif /* DEBUG_H_12987983217 */

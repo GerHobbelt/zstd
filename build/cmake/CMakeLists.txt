@@ -84,6 +84,11 @@ endif ()
 
 if (ANDROID)
     set(ZSTD_MULTITHREAD_SUPPORT_DEFAULT OFF)
+    # Old versions of bionic libc don't have fseeko/ftello
+    if ((NOT ${ANDROID_PLATFORM_LEVEL}) OR ${ANDROID_PLATFORM_LEVEL} VERSION_LESS 24)
+        message(STATUS "Setting compile definitions for old Android API")
+        add_compile_definitions(LIBC_NO_FSEEKO)
+    endif ()
 else()
     set(ZSTD_MULTITHREAD_SUPPORT_DEFAULT ON)
 endif()

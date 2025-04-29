@@ -20,10 +20,6 @@
 ******************************************/
 #include "zstd_deps.h"    /* size_t, ptrdiff_t */
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 /*-*****************************************
 *  FSE_PUBLIC_API : control library symbols visibility
 ******************************************/
@@ -225,10 +221,6 @@ FSE_decompress_usingDTable() result will tell how many bytes were regenerated (<
 If there is an error, the function will return an error code, which can be tested using FSE_isError(). (ex: dst buffer too small)
 */
 
-#if defined (__cplusplus)
-}
-#endif
-
 #endif  /* FSE_H */
 
 
@@ -256,10 +248,6 @@ If there is an error, the function will return an error code, which can be teste
 /* *****************************************
  *  FSE advanced API
  ***************************************** */
-
-#if defined (__cplusplus)
-extern "C" {
-#endif
 
 unsigned FSE_optimalTableLog_internal(unsigned maxTableLog, size_t srcSize, unsigned maxSymbolValue, unsigned minus);
 /**< same as FSE_optimalTableLog(), which used `minus==2` */
@@ -633,9 +621,5 @@ MEM_STATIC unsigned FSE_endOfDState(const FSE_DState_t* DStatePtr)
 #endif
 
 #define FSE_TABLESTEP(tableSize) (((tableSize)>>1) + ((tableSize)>>3) + 3)
-
-#if defined (__cplusplus)
-}
-#endif
 
 #endif /* FSE_STATIC_LINKING_ONLY */

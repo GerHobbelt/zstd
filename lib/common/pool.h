@@ -16,10 +16,6 @@
 #define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_customMem */
 #include "../zstd.h"
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 typedef struct POOL_ctx_s POOL_ctx;
 
 /*! POOL_create() :
@@ -81,10 +77,5 @@ void POOL_add(POOL_ctx* ctx, POOL_function function, void* opaque);
  * @return : 1 if successful, 0 if not.
  */
 int POOL_tryAdd(POOL_ctx* ctx, POOL_function function, void* opaque);
-
-
-#if defined (__cplusplus)
-}
-#endif
 
 #endif

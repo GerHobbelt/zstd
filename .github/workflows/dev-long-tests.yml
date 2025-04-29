@@ -188,7 +188,7 @@ jobs:
     - name: ASan + UBSan + Regression Test
       run: make -j uasanregressiontest
 
-  clang-ubsan-regression:
+  clang-asan-ubsan-regression:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1

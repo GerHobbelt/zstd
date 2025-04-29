@@ -40,10 +40,6 @@
 #  endif
 #endif
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 #define STREAM_ACCUMULATOR_MIN_32  25
 #define STREAM_ACCUMULATOR_MIN_64  57
 #define STREAM_ACCUMULATOR_MIN    ((U32)(MEM_32bits() ? STREAM_ACCUMULATOR_MIN_32 : STREAM_ACCUMULATOR_MIN_64))
@@ -475,9 +471,5 @@ MEM_STATIC unsigned BIT_endOfDStream(const BIT_DStream_t* DStream)
 {
     return ((DStream->ptr == DStream->start) && (DStream->bitsConsumed == sizeof(DStream->bitContainer)*8));
 }
-
-#if defined (__cplusplus)
-}
-#endif
 
 #endif /* BITSTREAM_H_MODULE */

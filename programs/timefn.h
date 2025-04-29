@@ -26,11 +26,6 @@
   typedef unsigned long long PTime;  /* does not support compilers without long long support */
 #endif
 
-
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 /* UTIL_time_t contains a nanosecond time counter.
  * The absolute value is not meaningful.
  * It's only valid to compute the difference between 2 measurements. */
@@ -60,10 +55,5 @@ PTime UTIL_getSpanTimeMicro(UTIL_time_t clockStart, UTIL_time_t clockEnd);
 PTime UTIL_clockSpanMicro(UTIL_time_t clockStart);
 
 #define SEC_TO_MICRO ((PTime)1000000)  /* nb of microseconds in a second */
-
-
-#if defined (__cplusplus)
-}
-#endif
 
 #endif /* TIME_FN_H_MODULE_287987 */

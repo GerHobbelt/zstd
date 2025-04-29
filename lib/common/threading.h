@@ -65,11 +65,6 @@
 #define ZSTD_pthread_cond_signal(a)     WakeConditionVariable((a))
 #define ZSTD_pthread_cond_broadcast(a)  WakeAllConditionVariable((a))
 
-
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 /* ZSTD_pthread_create() and ZSTD_pthread_join() */
 typedef HANDLE ZSTD_pthread_t;
 
@@ -82,19 +77,9 @@ int ZSTD_pthread_join(ZSTD_pthread_t thread);
  * add here more wrappers as required
  */
 
-
-#if defined (__cplusplus)
-}
-#endif
-
 #elif defined(ZSTD_MULTITHREAD)    /* posix assumed ; need a better detection method */
 /* ===   POSIX Systems   === */
 #  include <pthread.h>
-
-
-#if defined (__cplusplus)
-extern "C" {
-#endif
 
 #if DEBUGLEVEL < 1
 
@@ -142,17 +127,8 @@ int ZSTD_pthread_cond_destroy(ZSTD_pthread_cond_t* cond);
 
 #endif
 
-#if defined (__cplusplus)
-}
-#endif
-
 #else  /* ZSTD_MULTITHREAD not defined */
 /* No multithreading support */
-
-
-#if defined (__cplusplus)
-extern "C" {
-#endif
 
 typedef int ZSTD_pthread_mutex_t;
 #define ZSTD_pthread_mutex_init(a, b)   ((void)(a), (void)(b), 0)
@@ -171,8 +147,5 @@ typedef int ZSTD_pthread_cond_t;
 
 #endif /* ZSTD_MULTITHREAD */
 
-#if defined (__cplusplus)
-}
-#endif
 
 #endif /* THREADING_H_938743 */

@@ -21,10 +21,6 @@
 #include "debug.h"
 #include "zstd_deps.h"       /* size_t */
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 /* ****************************************
 *  Compiler-specific
 ******************************************/
@@ -158,9 +154,5 @@ void _force_has_format_string(const char *format, ...) {
             return err_code;                                                       \
         }                                                                          \
     } while(0)
-
-#if defined (__cplusplus)
-}
-#endif
 
 #endif /* ERROR_H_MODULE */

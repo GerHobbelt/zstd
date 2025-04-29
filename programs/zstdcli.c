@@ -635,8 +635,6 @@ static unsigned parseCompressionParameters(const char* stringPtr, ZSTD_compressi
         return 0;
     }
 
-    DISPLAYLEVEL(4, "windowLog=%d, chainLog=%d, hashLog=%d, searchLog=%d \n", params->windowLog, params->chainLog, params->hashLog, params->searchLog);
-    DISPLAYLEVEL(4, "minMatch=%d, targetLength=%d, strategy=%d \n", params->minMatch, params->targetLength, params->strategy);
     if (stringPtr[0] != 0) return 0; /* check the end of string */
     return 1;
 }
@@ -856,8 +854,8 @@ int main(int argCount, const char** argv)
         ultra=0,
         contentSize=1,
         removeSrcFile=0;
-    ZSTD_paramSwitch_e mmapDict=ZSTD_ps_auto;
-    ZSTD_paramSwitch_e useRowMatchFinder = ZSTD_ps_auto;
+    ZSTD_ParamSwitch_e mmapDict=ZSTD_ps_auto;
+    ZSTD_ParamSwitch_e useRowMatchFinder = ZSTD_ps_auto;
     FIO_compressionType_t cType = FIO_zstdCompression;
     int nbWorkers = -1; /* -1 means unset */
     double compressibility = -1.0;  /* lorem ipsum generator */
@@ -898,7 +896,7 @@ int main(int argCount, const char** argv)
 #ifndef ZSTD_NOBENCH
     BMK_advancedParams_t benchParams = BMK_initAdvancedParams();
 #endif
-    ZSTD_paramSwitch_e literalCompressionMode = ZSTD_ps_auto;
+    ZSTD_ParamSwitch_e literalCompressionMode = ZSTD_ps_auto;
 
     /* init */
     checkLibVersion();

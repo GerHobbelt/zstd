@@ -27,7 +27,10 @@
 /*-************************************************************
 *  Fix fseek()'s 2GiB barrier with MSVC, macOS, *BSD, MinGW
 ***************************************************************/
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+#if defined(LIBC_NO_FSEEKO)
+/* Some older libc implementations don't include these functions (e.g. Bionic < 24) */
+#  define UTIL_fseek fseek
+#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
 #  define UTIL_fseek _fseeki64
 #elif !defined(__64BIT__) && (PLATFORM_POSIX_VERSION >= 200112L) /* No point defining Large file for 64 bit */
 #  define UTIL_fseek fseeko

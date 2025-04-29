@@ -533,7 +533,7 @@ static void test_sync(unsigned char *compr, size_t comprLen, unsigned char *unco
 
     err = PREFIX(inflate)(&d_stream, Z_FINISH);
     if (err != Z_STREAM_END) {
-        fprintf(stderr, "inflate should report Z_STREAM_END\n");
+        fprintf(stderr, "inflate reported %i != %i (Z_STREAM_END)\n", err, Z_STREAM_END);
         exit(1);
     }
     err = PREFIX(inflateEnd)(&d_stream);
