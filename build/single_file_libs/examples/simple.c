@@ -63,7 +63,7 @@ size_t ZSTD_decompress(void* dst, size_t dstLen, const void* src, size_t srcLen)
  * results in a 44kB binary (macOS 10.14, Clang 10); re-adding Zstd increases
  * the binary by 56kB (after calling \c strip).
  */
-int main() {
+int main(void) {
 	size_t size = ZSTD_decompress(dstDxt1, sizeof dstDxt1, srcZstd, sizeof srcZstd);
 	int compare = memcmp(rawDxt1, dstDxt1, sizeof dstDxt1);
 	printf("Decompressed size: %s\n", (size == sizeof dstDxt1) ? "PASSED" : "FAILED");

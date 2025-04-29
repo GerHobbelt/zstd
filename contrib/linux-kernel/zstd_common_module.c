@@ -9,6 +9,8 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
+#if !defined(_WIN32)
+
 #include <linux/module.h>
 
 #include "common/huf.h"
@@ -27,3 +29,5 @@ EXPORT_SYMBOL_GPL(ZSTD_getErrorCode);
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_DESCRIPTION("Zstd Common");
+
+#endif

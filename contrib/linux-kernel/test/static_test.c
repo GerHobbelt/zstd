@@ -7,6 +7,9 @@
  * in the COPYING file in the root directory of this source tree).
  * You may select, at your option, one of the above-listed licenses.
  */
+
+#if !defined(_WIN32)
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,3 +53,5 @@ int main(void) {
   test_decompress_unzstd();
   return 0;
 }
+
+#endif

@@ -14,6 +14,8 @@
  * \author Carl Woffenden, Numfum GmbH (released under a CC0 license)
  */
 
+#if !defined(BUILD_MONOLITHIC)
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -338,3 +340,5 @@ int main() {
 	}
 	return EXIT_FAILURE;
 }
+
+#endif

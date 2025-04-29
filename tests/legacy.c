@@ -32,9 +32,9 @@
 /*===========================================
 *   Precompressed frames
 *==========================================*/
-const char* const COMPRESSED; /* content is at end of file */
-size_t const COMPRESSED_SIZE = 917;
-const char* const EXPECTED; /* content is at end of file */
+static const char* const COMPRESSED; /* content is at end of file */
+static size_t const COMPRESSED_SIZE = 917;
+static const char* const EXPECTED; /* content is at end of file */
 
 
 static int testSimpleAPI(void)
@@ -178,7 +178,7 @@ int main(void)
     - v0.7.0
     - v0.8.0
 */
-const char* const COMPRESSED =
+static const char* const COMPRESSED =
     "\x24\xB5\x2F\xFD\x00\x00\x00\xBB\xB0\x02\xC0\x10\x00\x1E\xB0\x01"
     "\x02\x00\x00\x80\x00\xE8\x92\x34\x12\x97\xC8\xDF\xE9\xF3\xEF\x53"
     "\xEA\x1D\x27\x4F\x0C\x44\x90\x0C\x8D\xF1\xB4\x89\x17\x00\x18\x00"
@@ -238,7 +238,7 @@ const char* const COMPRESSED =
     "\x43\xF1\x1C\x4B\x54\x10\x9D\x31\x50\x85\x4B\x54\x0E\x01\x4B\x3D"
     "\x01\xD2\x2F\x21\x80";
 
-const char* const EXPECTED =
+static const char* const EXPECTED =
     "snowden is snowed in / he's now then in his snow den / when does the snow end?\n"
     "goodbye little dog / you dug some holes in your day / they'll be hard to fill.\n"
     "when life shuts a door, / just open it. it’s a door. / that is how doors work.\n"

@@ -324,7 +324,7 @@ Options::Status Options::parse(int argc, const char **argv) {
   if (!followLinks) {
 	  localInputFiles.erase(std::remove_if(localInputFiles.begin(), localInputFiles.end(),
                      [&](const char *path) {
-                        bool isLink = UTIL_isLink(path);
+                        bool isLink = !!UTIL_isLink(path);
                         if (isLink && verbosity >= 2) {
                             std::fprintf(
                                     stderr,

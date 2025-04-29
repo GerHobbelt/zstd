@@ -7,6 +7,9 @@
  * in the COPYING file in the root directory of this source tree).
  * You may select, at your option, one of the above-listed licenses.
  */
+
+#if !defined(_WIN32)
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -227,3 +230,5 @@ int main(void) {
   free_test_data(&data);
   return 0;
 }
+
+#endif

@@ -8,6 +8,8 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
+#if !defined(_WIN32)
+
 #include "data.h"
 
 #include <assert.h>
@@ -629,3 +631,5 @@ void data_finish(void) {
     free(g_data_dir);
     g_data_dir = NULL;
 }
+
+#endif

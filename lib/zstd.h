@@ -17,9 +17,7 @@
 #include <stddef.h>   /* size_t */
 
 #include "zstd_errors.h" /* list of errors */
-#if defined(ZSTD_STATIC_LINKING_ONLY) && !defined(ZSTD_H_ZSTD_STATIC_LINKING_ONLY)
 #include <limits.h>   /* INT_MAX */
-#endif /* ZSTD_STATIC_LINKING_ONLY */
 
 #if defined (__cplusplus)
 extern "C" {
@@ -1227,9 +1225,6 @@ ZSTDLIB_API size_t ZSTD_sizeof_DDict(const ZSTD_DDict* ddict);
 
 #endif // !defined(RC_INVOKED)
 
-#endif  /* ZSTD_H_235446 */
-
-
 #if !defined(RC_INVOKED)
 
 /* **************************************************************************************
@@ -1240,9 +1235,6 @@ ZSTDLIB_API size_t ZSTD_sizeof_DDict(const ZSTD_DDict* ddict);
  * They should never be used with a dynamic library, as prototypes may change in the future.
  * Use them only in association with static linking.
  * ***************************************************************************************/
-
-#if defined(ZSTD_STATIC_LINKING_ONLY) && !defined(ZSTD_H_ZSTD_STATIC_LINKING_ONLY)
-#define ZSTD_H_ZSTD_STATIC_LINKING_ONLY
 
 #if defined (__cplusplus)
 extern "C" {
@@ -3217,9 +3209,11 @@ ZSTDLIB_STATIC_API size_t ZSTD_decompressBlock(ZSTD_DCtx* dctx, void* dst, size_
 ZSTD_DEPRECATED("The block API is deprecated in favor of the normal compression API. See docs.")
 ZSTDLIB_STATIC_API size_t ZSTD_insertBlock    (ZSTD_DCtx* dctx, const void* blockStart, size_t blockSize);  /**< insert uncompressed block into `dctx` history. Useful for multi-blocks decompression. */
 
-#endif // !defined(RC_INVOKED)
-
 #if defined (__cplusplus)
 }
 #endif
+
+#endif // !defined(RC_INVOKED)
+
+#endif  /* ZSTD_H_235446 */
 

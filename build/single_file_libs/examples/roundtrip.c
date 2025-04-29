@@ -56,7 +56,7 @@ size_t ZSTD_decompress(void* dst, size_t dstLen, const void* src, size_t srcLen)
  * Simple single-file test to compress \c rawData, decompress the result, then
  * compare the decompressed version with the original.
  */
-int main() {
+int main(void) {
 	size_t bounds = ZSTD_compressBound(sizeof rawData);
 	void* compBuf = malloc(bounds);
 	void* testBuf = malloc(sizeof rawData);

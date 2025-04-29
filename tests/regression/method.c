@@ -8,6 +8,8 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
+#if !defined(_WIN32)
+
 #include "method.h"
 
 #include <stdio.h>
@@ -699,3 +701,5 @@ static method_t const* g_methods[] = {
 };
 
 method_t const* const* methods = g_methods;
+
+#endif
