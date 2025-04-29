@@ -30,7 +30,7 @@ jobs:
         make c99build; make clean
         make c11build; make clean
         make -j regressiontest; make clean
-        make shortest; make clean
+        make check; make clean
         make cxxtest; make clean
 
   short-tests-1:

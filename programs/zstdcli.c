@@ -1317,7 +1317,8 @@ int main(int argCount, const char** argv)
         nbWorkers = default_nbThreads();
       }
     }
-    DISPLAYLEVEL(4, "Compressing with %u worker threads \n", nbWorkers);
+    if (operation != zom_bench)
+        DISPLAYLEVEL(4, "Compressing with %u worker threads \n", nbWorkers);
 #else
     (void)singleThread; (void)nbWorkers; (void)defaultLogicalCores;
 #endif
@@ -1402,13 +1403,19 @@ int main(int argCount, const char** argv)
         if (cLevel > ZSTD_maxCLevel()) cLevel = ZSTD_maxCLevel();
         if (cLevelLast > ZSTD_maxCLevel()) cLevelLast = ZSTD_maxCLevel();
         if (cLevelLast < cLevel) cLevelLast = cLevel;
-        if (cLevelLast > cLevel)
-            DISPLAYLEVEL(3, "Benchmarking levels from %d to %d\n", cLevel, cLevelLast);
+        DISPLAYLEVEL(3, "Benchmarking ");
+        if (filenames->tableSize > 1)
+            DISPLAYLEVEL(3, "%u files ", (unsigned)filenames->tableSize);
+        if (cLevelLast > cLevel) {
+            DISPLAYLEVEL(3, "from level %d to %d ", cLevel, cLevelLast);
+        } else {
+            DISPLAYLEVEL(3, "at level %d ", cLevel);
+        }
+        DISPLAYLEVEL(3, "using %i threads \n", nbWorkers);
         if (filenames->tableSize > 0) {
             if(separateFiles) {
                 unsigned i;
                 for(i = 0; i < filenames->tableSize; i++) {
-                    DISPLAYLEVEL(3, "Benchmarking %s \n", filenames->fileNames[i]);
                     operationResult = BMK_benchFilesAdvanced(&filenames->fileNames[i], 1, dictFileName, cLevel, cLevelLast, &compressionParams, g_displayLevel, &benchParams);
                 }
             } else {

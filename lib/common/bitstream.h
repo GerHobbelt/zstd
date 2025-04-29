@@ -159,7 +159,7 @@ MEM_STATIC size_t BIT_initCStream(BIT_CStream_t* bitC,
     return 0;
 }
 
-FORCE_INLINE_TEMPLATE size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits)
+FORCE_INLINE_TEMPLATE size_t BIT_getLowerBits(BitContainerType bitContainer, U32 const nbBits)
 {
     assert(nbBits < BIT_MASK_SIZE);
 #if !defined(ZSTD_NO_INTRINSICS) && !defined(ZSTD_NO_BZHI_INTRINSIC)
@@ -169,13 +169,13 @@ FORCE_INLINE_TEMPLATE size_t BIT_getLowerBits(size_t bitContainer, U32 const nbB
         return _bzhi_u64(bitContainer, nbBits);
 #   elif (defined(_MSC_VER) && defined(_M_IX86)) || \
          (defined(__GNUC__) && defined(__i386__))
+        DEBUG_STATIC_ASSERT(sizeof(bitContainer) == sizeof(U32));
         return _bzhi_u32(bitContainer, nbBits);
 #   endif
 # elif (defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))) || \
       (defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__)))
     return bitContainer & ((((size_t)1) << nbBits) - 1);
 # else
-    return bitContainer & BIT_mask[nbBits];
 # endif
 #else
     return bitContainer & BIT_mask[nbBits];
@@ -246,7 +246,7 @@ MEM_STATIC size_t BIT_closeCStream(BIT_CStream_t* bitC)
     BIT_addBitsFast(bitC, 1, 1);   /* endMark */
     BIT_flushBits(bitC);
     if (bitC->ptr >= bitC->endPtr) return 0; /* overflow detected */
-    return (bitC->ptr - bitC->startPtr) + (bitC->bitPos > 0);
+    return (size_t)(bitC->ptr - bitC->startPtr) + (bitC->bitPos > 0);
 }
 
 

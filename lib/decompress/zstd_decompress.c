@@ -2096,6 +2096,7 @@ size_t ZSTD_decompressStream(ZSTD_DStream* zds, ZSTD_outBuffer* output, ZSTD_inB
     U32 someMoreWork = 1;
 
     DEBUGLOG(5, "ZSTD_decompressStream");
+    assert(zds != NULL);
     RETURN_ERROR_IF(
         input->pos > input->size,
         srcSize_wrong,

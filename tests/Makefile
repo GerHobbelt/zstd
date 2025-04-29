@@ -312,12 +312,12 @@ endif
 list:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
 
-.PHONY: shortest
-shortest: ZSTDRTTEST=  # remove long tests
-shortest: test-zstd
-
 .PHONY: check
-check: shortest
+check: ZSTDRTTEST=  # remove long tests
+check: test-zstd
+	@echo "\n******************************"
+	@echo "All tests completed successfully"
+	@echo "******************************"
 
 .PHONY: fuzztest
 fuzztest: test-fuzzer test-zstream test-decodecorpus
@@ -327,6 +327,9 @@ test: test-zstd test-cli-tests test-fullbench test-fuzzer test-zstream test-inva
 ifeq ($(QEMU_SYS),)
 test: test-pool
 endif
+	@echo "\n******************************"
+	@echo "All tests completed successfully"
+	@echo "******************************"
 
 .PHONY: test32
 test32: test-zstd32 test-fullbench32 test-fuzzer32 test-zstream32

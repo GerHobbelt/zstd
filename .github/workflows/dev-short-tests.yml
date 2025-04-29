@@ -144,11 +144,11 @@ jobs:
     - name: install valgrind
       run: |
         sudo apt-get -qqq update
-        make valgrindinstall
+        make valgrindinstall V=1
     - name: zlib wrapper test
-      run: make -C zlibWrapper test
+      run: make -C zlibWrapper test V=1
     - name: zlib wrapper test under valgrind
-      run: make -C zlibWrapper test-valgrind
+      run: make -C zlibWrapper test-valgrind V=1
 
   lz4-threadpool-libs:
     runs-on: ubuntu-latest
@@ -164,7 +164,7 @@ jobs:
         make clean
         bash tests/libzstd_builds.sh
 
-  gcc-make-tests-32bit:
+  gcc-make-all-32bit:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
@@ -173,6 +173,17 @@ jobs:
         sudo apt-get -qqq update
         make libc6install
         CFLAGS="-Werror -m32" make -j all32
+
+  gcc-make-all-32bit-avx2:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # tag=v4.1.1
+    - name: Make all, 32bit mode
+      run: |
+        sudo apt-get -qqq update
+        make libc6install
+        CFLAGS="-Werror -m32 -mavx2" make -j all32
+
 
   gcc-8-make:
     runs-on: ubuntu-latest
