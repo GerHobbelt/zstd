@@ -15,16 +15,16 @@
  * or detecting and returning an error
  */
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 #ifndef BENCH_FN_H_23876
 #define BENCH_FN_H_23876
 
 /* ===  Dependencies  === */
 #include <stddef.h>   /* size_t */
 
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 /* ====  Benchmark any function, iterated on a set of blocks  ==== */
 

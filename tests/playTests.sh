@@ -109,10 +109,7 @@ isTerminal=${isTerminal:-$detectedTerminal}
 
 isWindows=false
 INTOVOID="/dev/null"
-case "$UNAME" in
-  GNU) DEVDEVICE="/dev/random" ;;
-  *) DEVDEVICE="/dev/zero" ;;
-esac
+DEVDEVICE="/dev/zero"
 case "$OS" in
   Windows*)
     isWindows=true

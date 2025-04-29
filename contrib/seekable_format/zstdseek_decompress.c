@@ -252,6 +252,8 @@ size_t ZSTD_seekable_free(ZSTD_seekable* zs)
 
 ZSTD_seekTable* ZSTD_seekTable_create_fromSeekable(const ZSTD_seekable* zs)
 {
+    assert(zs != NULL);
+    if (zs->seekTable.entries == NULL) return NULL;
     ZSTD_seekTable* const st = (ZSTD_seekTable*)malloc(sizeof(ZSTD_seekTable));
     if (st==NULL) return NULL;
 

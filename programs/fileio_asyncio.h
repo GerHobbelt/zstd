@@ -22,10 +22,6 @@
 #ifndef ZSTD_FILEIO_ASYNCIO_H
 #define ZSTD_FILEIO_ASYNCIO_H
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 #include "../lib/common/mem.h"     /* U32, U64 */
 #include "fileio_types.h"
 #include "platform.h"
@@ -34,6 +30,10 @@ extern "C" {
 #include "../lib/common/threading.h"
 
 #define MAX_IO_JOBS          (10)
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 typedef struct {
     /* These struct fields should be set only on creation and not changed afterwards */

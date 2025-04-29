@@ -11,12 +11,6 @@
 #ifndef TIME_FN_H_MODULE_287987
 #define TIME_FN_H_MODULE_287987
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
-
-
 /*-****************************************
 *  Types
 ******************************************/
@@ -30,6 +24,11 @@ extern "C" {
   typedef uint64_t           PTime;  /* Precise Time */
 #else
   typedef unsigned long long PTime;  /* does not support compilers without long long support */
+#endif
+
+
+#if defined (__cplusplus)
+extern "C" {
 #endif
 
 /* UTIL_time_t contains a nanosecond time counter.

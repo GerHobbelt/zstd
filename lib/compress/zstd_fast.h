@@ -11,12 +11,12 @@
 #ifndef ZSTD_FAST_H
 #define ZSTD_FAST_H
 
+#include "../common/mem.h"      /* U32 */
+#include "zstd_compress_internal.h"
+
 #if defined (__cplusplus)
 extern "C" {
 #endif
-
-#include "../common/mem.h"      /* U32 */
-#include "zstd_compress_internal.h"
 
 void ZSTD_fillHashTable(ZSTD_matchState_t* ms,
                         void const* end, ZSTD_dictTableLoadMethod_e dtlm,

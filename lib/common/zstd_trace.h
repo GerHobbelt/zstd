@@ -11,11 +11,11 @@
 #ifndef ZSTD_TRACE_H
 #define ZSTD_TRACE_H
 
+#include <stddef.h>
+
 #if defined (__cplusplus)
 extern "C" {
 #endif
-
-#include <stddef.h>
 
 /* weak symbol support
  * For now, enable conservatively:

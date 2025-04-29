@@ -14,10 +14,6 @@
   * and display progress result and final summary
   */
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 #ifndef BENCH_ZSTD_H_3242387
 #define BENCH_ZSTD_H_3242387
 
@@ -26,6 +22,10 @@ extern "C" {
 #define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_compressionParameters */
 #include "../lib/zstd.h"     /* ZSTD_compressionParameters */
 
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 /* ===  Constants  === */
 

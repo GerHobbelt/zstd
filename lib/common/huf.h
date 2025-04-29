@@ -21,6 +21,9 @@
 #define FSE_STATIC_LINKING_ONLY
 #include "fse.h"
 
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 #if defined (__cplusplus)
 extern "C" {

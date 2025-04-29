@@ -11,6 +11,11 @@
  #ifndef ZSTDMT_COMPRESS_H
  #define ZSTDMT_COMPRESS_H
 
+/* ===   Dependencies   === */
+#include "../common/zstd_deps.h"   /* size_t */
+#define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_parameters */
+#include "../zstd.h"            /* ZSTD_inBuffer, ZSTD_outBuffer, ZSTDLIB_API */
+
  #if defined (__cplusplus)
  extern "C" {
  #endif
@@ -24,12 +29,6 @@
  *        This API requires ZSTD_MULTITHREAD to be defined during compilation,
  *        otherwise ZSTDMT_createCCtx*() will fail.
  */
-
-/* ===   Dependencies   === */
-#include "../common/zstd_deps.h"   /* size_t */
-#define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_parameters */
-#include "../zstd.h"            /* ZSTD_inBuffer, ZSTD_outBuffer, ZSTDLIB_API */
-
 
 /* ===   Constants   === */
 #ifndef ZSTDMT_NBWORKERS_MAX /* a different value can be selected at compile time */

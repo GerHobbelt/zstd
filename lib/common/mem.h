@@ -11,10 +11,6 @@
 #ifndef MEM_H_MODULE
 #define MEM_H_MODULE
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 /*-****************************************
 *  Dependencies
 ******************************************/
@@ -76,6 +72,10 @@ extern "C" {
   typedef   signed long long  S64;
 #endif
 
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 /*-**************************************************************
 *  Memory I/O API

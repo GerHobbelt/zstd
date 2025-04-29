@@ -11,11 +11,11 @@
 #ifndef ZSTD_OPT_H
 #define ZSTD_OPT_H
 
+#include "zstd_compress_internal.h"
+
 #if defined (__cplusplus)
 extern "C" {
 #endif
-
-#include "zstd_compress_internal.h"
 
 #if !defined(ZSTD_EXCLUDE_BTLAZY2_BLOCK_COMPRESSOR) \
  || !defined(ZSTD_EXCLUDE_BTOPT_BLOCK_COMPRESSOR) \

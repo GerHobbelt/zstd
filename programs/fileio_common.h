@@ -11,14 +11,21 @@
 #ifndef ZSTD_FILEIO_COMMON_H
 #define ZSTD_FILEIO_COMMON_H
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 #include "../lib/common/mem.h"     /* U32, U64 */
 #include "fileio_types.h"
 #include "platform.h"
 #include "timefn.h"     /* UTIL_getTime, UTIL_clockSpanMicro */
+
+#if !(defined(_MSC_VER) && _MSC_VER >= 1400) \
+    && !(!defined(__64BIT__) && (PLATFORM_POSIX_VERSION >= 200112L)) \
+    && !(defined(__MINGW32__) && !defined(__STRICT_ANSI__) && !defined(__NO_MINGW_LFS) && defined(__MSVCRT__)) \
+    && (defined(_WIN32) && !defined(__DJGPP__))
+#   include <windows.h>
+#endif
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 /*-*************************************
 *  Macros
@@ -28,11 +35,14 @@ extern "C" {
 #define GB *(1U<<30)
 #undef MAX
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
+#undef MIN  /* in case it would be already defined */
+#define MIN(a,b)    ((a) < (b) ? (a) : (b))
 
 extern FIO_display_prefs_t g_display_prefs;
 
-#define DISPLAY(...)         fprintf(stderr, __VA_ARGS__)
-#define DISPLAYOUT(...)      fprintf(stdout, __VA_ARGS__)
+#define DISPLAY_F(f, ...)    fprintf((f), __VA_ARGS__)
+#define DISPLAYOUT(...)      DISPLAY_F(stdout, __VA_ARGS__)
+#define DISPLAY(...)         DISPLAY_F(stderr, __VA_ARGS__)
 #define DISPLAYLEVEL(l, ...) { if (g_display_prefs.displayLevel>=l) { DISPLAY(__VA_ARGS__); } }
 
 extern UTIL_time_t g_displayClock;
@@ -55,10 +65,6 @@ extern UTIL_time_t g_displayClock;
 #define DISPLAY_PROGRESS(...) { if (SHOULD_DISPLAY_PROGRESS()) { DISPLAYLEVEL(1, __VA_ARGS__); }}
 #define DISPLAYUPDATE_PROGRESS(...) { if (SHOULD_DISPLAY_PROGRESS()) { DISPLAYUPDATE(1, __VA_ARGS__); }}
 #define DISPLAY_SUMMARY(...) { if (SHOULD_DISPLAY_SUMMARY()) { DISPLAYLEVEL(1, __VA_ARGS__); } }
-
-#undef MIN  /* in case it would be already defined */
-#define MIN(a,b)    ((a) < (b) ? (a) : (b))
-
 
 #define EXM_THROW(error, ...)                                             \
 {                                                                         \
@@ -90,7 +96,6 @@ extern UTIL_time_t g_displayClock;
 #   define LONG_SEEK fseeko64
 #   define LONG_TELL ftello64
 #elif defined(_WIN32) && !defined(__DJGPP__)
-#   include <windows.h>
     static int LONG_SEEK(FILE* file, __int64 offset, int origin) {
         LARGE_INTEGER off;
         DWORD method;

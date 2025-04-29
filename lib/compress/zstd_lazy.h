@@ -11,11 +11,11 @@
 #ifndef ZSTD_LAZY_H
 #define ZSTD_LAZY_H
 
+#include "zstd_compress_internal.h"
+
 #if defined (__cplusplus)
 extern "C" {
 #endif
-
-#include "zstd_compress_internal.h"
 
 /**
  * Dedicated Dictionary Search Structure bucket log. In the

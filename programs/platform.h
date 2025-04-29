@@ -11,12 +11,6 @@
 #ifndef PLATFORM_H_MODULE
 #define PLATFORM_H_MODULE
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
-
-
 /* **************************************
 *  Compiler Options
 ****************************************/
@@ -148,10 +142,20 @@ extern "C" {
 #  include <io.h>      /* _isatty */
 #  include <windows.h> /* DeviceIoControl, HANDLE, FSCTL_SET_SPARSE */
 #  include <stdio.h>   /* FILE */
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
 static __inline int IS_CONSOLE(FILE* stdStream) {
     DWORD dummy;
     return _isatty(_fileno(stdStream)) && GetConsoleMode((HANDLE)_get_osfhandle(_fileno(stdStream)), &dummy);
 }
+
+#if defined (__cplusplus)
+}
+#endif
+
 #else
 #  define IS_CONSOLE(stdStream) 0
 #endif
@@ -212,11 +216,6 @@ static __inline int IS_CONSOLE(FILE* stdStream) {
 #  else
 #     define ZSTD_NANOSLEEP_SUPPORT 0
 #  endif
-#endif
-
-
-#if defined (__cplusplus)
-}
 #endif
 
 #endif /* PLATFORM_H_MODULE */

@@ -13,11 +13,6 @@
 #ifndef ERROR_H_MODULE
 #define ERROR_H_MODULE
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
-
 /* ****************************************
 *  Dependencies
 ******************************************/
@@ -26,6 +21,9 @@ extern "C" {
 #include "debug.h"
 #include "zstd_deps.h"       /* size_t */
 
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 /* ****************************************
 *  Compiler-specific

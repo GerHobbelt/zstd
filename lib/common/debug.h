@@ -32,10 +32,6 @@
 #ifndef DEBUG_H_12987983217
 #define DEBUG_H_12987983217
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 
 /* static assert is triggered at compile time, leaving no runtime artefact.
  * static assert only works with compile-time constants.
@@ -75,9 +71,12 @@ extern "C" {
 #  endif
 #endif
 
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
 #if (DEBUGLEVEL>=2)
 #  define ZSTD_DEPS_NEED_IO
-#  include "zstd_deps.h"
 extern int g_debuglevel; /* the variable is only declared,
                             it actually lives in debug.c,
                             and is shared by the whole process.

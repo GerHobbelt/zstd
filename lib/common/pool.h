@@ -11,14 +11,14 @@
 #ifndef POOL_H
 #define POOL_H
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 
 #include "zstd_deps.h"
 #define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_customMem */
 #include "../zstd.h"
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 typedef struct POOL_ctx_s POOL_ctx;
 

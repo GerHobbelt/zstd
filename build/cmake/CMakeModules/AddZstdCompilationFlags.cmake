@@ -1,11 +1,10 @@
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
-# VERSION_GREATER_EQUAL requires CMake 3.7 or later.
-# https://cmake.org/cmake/help/latest/command/if.html#version-greater-equal
-if (CMAKE_VERSION VERSION_LESS 3.18)
-    set(ZSTD_HAVE_CHECK_LINKER_FLAG false)
-else ()
+
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
     set(ZSTD_HAVE_CHECK_LINKER_FLAG true)
+else ()
+    set(ZSTD_HAVE_CHECK_LINKER_FLAG false)
 endif ()
 if (ZSTD_HAVE_CHECK_LINKER_FLAG)
     include(CheckLinkerFlag)

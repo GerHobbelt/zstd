@@ -11,12 +11,12 @@
 #ifndef ZSTD_DOUBLE_FAST_H
 #define ZSTD_DOUBLE_FAST_H
 
+#include "../common/mem.h"      /* U32 */
+#include "zstd_compress_internal.h"     /* ZSTD_CCtx, size_t */
+
 #if defined (__cplusplus)
 extern "C" {
 #endif
-
-#include "../common/mem.h"      /* U32 */
-#include "zstd_compress_internal.h"     /* ZSTD_CCtx, size_t */
 
 #ifndef ZSTD_EXCLUDE_DFAST_BLOCK_COMPRESSOR
 

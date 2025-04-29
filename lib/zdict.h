@@ -8,16 +8,16 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
-
 #ifndef ZSTD_ZDICT_H
 #define ZSTD_ZDICT_H
+
 
 /*======  Dependencies  ======*/
 #include <stddef.h>  /* size_t */
 
+#if defined (__cplusplus)
+extern "C" {
+#endif
 
 /* =====   ZDICTLIB_API : control library symbols visibility   ===== */
 #ifndef ZDICTLIB_VISIBLE

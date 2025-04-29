@@ -14,9 +14,6 @@
 #ifndef BITSTREAM_H_MODULE
 #define BITSTREAM_H_MODULE
 
-#if defined (__cplusplus)
-extern "C" {
-#endif
 /*
 *  This API consists of small unitary functions, which must be inlined for best performance.
 *  Since link-time-optimization is not available for all compilers,
@@ -32,7 +29,6 @@ extern "C" {
 #include "error_private.h"  /* error codes and messages */
 #include "bits.h"           /* ZSTD_highbit32 */
 
-
 /*=========================================
 *  Target specific
 =========================================*/
@@ -42,6 +38,10 @@ extern "C" {
 #  elif defined(__ICCARM__)
 #    include <intrinsics.h>
 #  endif
+#endif
+
+#if defined (__cplusplus)
+extern "C" {
 #endif
 
 #define STREAM_ACCUMULATOR_MIN_32  25
