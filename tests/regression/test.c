@@ -33,7 +33,7 @@ static int is_name_bad(char const* name) {
 }
 
 /** Check if any of the names contain a comma. */
-static int are_names_bad() {
+static int are_names_bad(void) {
     for (size_t method = 0; methods[method] != NULL; ++method)
         if (is_name_bad(methods[method]->name)) {
             fprintf(stderr, "method name %s is bad\n", methods[method]->name);
@@ -154,7 +154,7 @@ static void print_help(void) {
 }
 
 /** Parse the arguments. Return 0 on success. Print help on failure. */
-static int parse_args(int argc, char** argv) {
+static int parse_args(int argc, const char** argv) {
     int option_index = 0;
     int c;
 
@@ -277,8 +277,8 @@ static int run_all(FILE* results) {
                 } else {
                     tprintf(
                         results,
-                        "%llu\n",
-                        (unsigned long long)result_get_data(result).total_size);
+                        "%zu\n",
+                        result_get_data(result).total_size);
                 }
                 tflush(results);
             }
@@ -322,7 +322,7 @@ out:
     return ret;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, const char** argv) {
     /* Parse args and validate modules. */
     int ret = parse_args(argc, argv);
     if (ret != 0)
