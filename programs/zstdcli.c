@@ -1087,10 +1087,11 @@ int main(int argCount, const char** argv)
 #ifndef ZSTD_NOTRACE
                 if (longCommandWArg(&argument, "--trace")) { char const* traceFile; NEXT_FIELD(traceFile); TRACE_enable(traceFile); continue; }
 #endif
-                if (longCommandWArg(&argument, "--patch-from")) { NEXT_FIELD(patchFromDictFileName); continue; }
+                if (longCommandWArg(&argument, "--patch-from")) { NEXT_FIELD(patchFromDictFileName); ultra = 1; continue; }
                 if (longCommandWArg(&argument, "--long")) {
                     unsigned ldmWindowLog = 0;
                     ldmFlag = 1;
+                    ultra = 1;
                     /* Parse optional window log */
                     if (*argument == '=') {
                         ++argument;
