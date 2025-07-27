@@ -15,6 +15,7 @@
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS /* disable Visual warning that it doesn't like fopen() */
 #endif
+#define LIBASSERT_ASSERT_IS_EXPRESSION
 #define ZSTD_DISABLE_DEPRECATE_WARNINGS /* No deprecation warnings, we still bench some deprecated functions */
 #include <limits.h>
 #include "util.h"        /* Compiler options, UTIL_GetFileSize */
