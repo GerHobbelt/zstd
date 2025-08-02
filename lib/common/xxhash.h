@@ -2413,11 +2413,22 @@ static void* XXH_memcpy(void* dest, const void* src, size_t size)
  * compiler's command line options. The value must be a number.
  */
 #ifndef XXH_DEBUGLEVEL
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4574)   // shut up warning C4574: 'U_NO_DEFAULT_INCLUDE_UTF_HEADERS' is defined to be '0': did you mean to use '#if U_NO_DEFAULT_INCLUDE_UTF_HEADERS'?
+#endif
+
 #  ifdef DEBUGLEVEL /* backwards compat */
 #    define XXH_DEBUGLEVEL DEBUGLEVEL
 #  else
 #    define XXH_DEBUGLEVEL 0
 #  endif
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 #endif
 
 #if (XXH_DEBUGLEVEL>=1)

@@ -5,7 +5,12 @@
 #include <assert.h>
 #include <string.h>
 
-int main(int argc, char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_seqbenchmark_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     ZSTD_CCtx* zc = ZSTD_createCCtx();
 
     if (argc != 2) {

@@ -54,6 +54,11 @@ static int usage(const char* programName)
     return 0;
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_datagen_cli_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     unsigned probaU32             = COMPRESSIBILITY_DEFAULT;

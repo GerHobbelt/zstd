@@ -2696,6 +2696,11 @@ static int parse_params(const char** argptr, paramValues_t* pv) {
 *  Main
 **************************************/
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_parameter_grill_test_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     int i,

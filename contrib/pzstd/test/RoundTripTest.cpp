@@ -59,7 +59,13 @@ Options generateOptions(Generator& gen, const string& inputFile) {
 }
 }
 
-int main() {
+
+#if defined(BUILD_MONOLITHIC)
+#define main      zstd_pzstd_round_trip_test_main
+#endif
+
+extern "C"
+int main(void) {
   std::mt19937 gen(std::random_device{}());
 
   auto newlineGuard = makeScopeGuard([] { std::fprintf(stderr, "\n"); });

@@ -1845,7 +1845,7 @@ static unsigned longCommandWArg(const char** stringPtr, const char* longCommand)
     return result;
 }
 
-int main(int argc, char** argv)
+int main(int argc, const char** argv)
 {
     U32 seed = 0;
     int seedset = 0;

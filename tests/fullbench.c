@@ -1105,6 +1105,11 @@ static int badusage(const char* exename)
     return 1;
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_full_benchmark_test_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     int argNb, filenamesStart=0, result;
@@ -1199,8 +1204,6 @@ int main(int argc, const char** argv)
         /* first provided filename is input */
         if (!input_filename) { input_filename=argument; filenamesStart=argNb; continue; }
     }
-
-
 
     if (filenamesStart==0)   /* no input file */
         result = benchSample(scenarioID, sampleSize, compressibility, cLevel, cparams);

@@ -223,7 +223,12 @@ static int testAbruptEnding(void) {
 
 /* --- test launcher --- */
 
-int main(int argc, const char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_pool_tests_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
   size_t numThreads;
   (void)argc;
   (void)argv;

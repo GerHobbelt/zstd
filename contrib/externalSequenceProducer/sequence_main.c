@@ -26,7 +26,12 @@ do {                                                    \
     }                                                   \
 } while (0)                                             \
 
-int main(int argc, char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_external_sequence_producer_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int retn = 0;
     if (argc != 2) {
         printf("Usage: externalSequenceProducer <file>\n");

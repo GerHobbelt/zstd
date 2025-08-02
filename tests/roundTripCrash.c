@@ -222,10 +222,15 @@ static void fileCheck(const char* fileName, int testCCtxParams)
     free (buffer);
 }
 
-int main(int argCount, const char** argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_roundtrip_crash_test_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int argNb = 1;
     int testCCtxParams = 0;
-    if (argCount < 2) {
+    if (argc < 2) {
         fprintf(stderr, "Error : no argument : need input file \n");
         exit(9);
     }

@@ -160,6 +160,11 @@ static int testFrameDecoding(void)
     return 0;
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main      zstd_legacy_test_main
+#endif
+
 int main(void)
 {
     {   int const ret = testSimpleAPI();

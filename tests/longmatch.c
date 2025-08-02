@@ -33,6 +33,11 @@ compress(ZSTD_CStream *ctx, ZSTD_outBuffer out, const void *data, size_t size)
   return 0;
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_long_match_test_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
   ZSTD_CStream* ctx;

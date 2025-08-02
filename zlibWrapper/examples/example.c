@@ -1009,6 +1009,7 @@ static void test_deflate_tune(unsigned char *compr, size_t comprLen) {
 /* ===========================================================================
  * Usage:  example [output.gz  [input.gz]]
  */
+
 int main(int argc, const char** argv)
 {
     unsigned char *compr, *uncompr;

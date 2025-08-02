@@ -67,7 +67,12 @@ static void write_file(const char* path, const u8* ptr, size_t size)
     fclose(f);
 }
 
-int main(int argc, char **argv)
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_education_decoder_harness_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
     if (argc < 3)
         ERR_OUT("usage: %s <file.zst> <out_path> [dictionary] \n", argv[0]);

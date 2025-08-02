@@ -322,6 +322,11 @@ out:
     return ret;
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_regression_tests_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv) {
     /* Parse args and validate modules. */
     int ret = parse_args(argc, argv);

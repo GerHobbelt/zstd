@@ -3316,6 +3316,11 @@ static int FUZ_usage(const char* programName)
 
 typedef enum { simple_api, advanced_api } e_api;
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_zstream_test_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     U32 seed = 0;

@@ -38,6 +38,11 @@ static const dictionary dictionaries[] = {
   {NULL, 0},
 };
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_invalid_dictionaries_test_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv) {
   const dictionary *dict;
   for (dict = dictionaries; dict->data != NULL; ++dict) {

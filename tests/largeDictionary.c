@@ -60,6 +60,11 @@ compress(ZSTD_CCtx* cctx, ZSTD_DCtx* dctx,
     return 0;
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zstd_large_dictionary_test_main(cnt, arr)
+#endif
+
 int main(int argc, const char** argv)
 {
     ZSTD_CCtx* cctx = ZSTD_createCCtx();
